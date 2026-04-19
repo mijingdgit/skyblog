@@ -1,0 +1,129 @@
+:root {
+  --primary: #00BFFF;
+  --secondary: #1E90FF;
+  --accent: #00FFFF;
+  --bg-dark: #0a0a1a;
+  --text-white: #ffffff;
+  --text-muted: rgba(255, 255, 255, 0.7);
+  --glass-bg: rgba(255, 255, 255, 0.03);
+  --glass-border: rgba(0, 191, 255, 0.15);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Noto Sans SC', 'Microsoft YaHei', sans-serif;
+  background: var(--bg-dark);
+  color: var(--text-white);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+#app {
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  text-align: left;
+}
+
+/* 自定义滚动条 */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-dark);
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--primary), var(--secondary));
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, var(--accent), var(--primary));
+}
+
+/* 选中文字颜色 */
+::selection {
+  background: var(--primary);
+  color: var(--text-white);
+}
+
+/* Element Plus 深色主题覆盖 */
+html.dark {
+  --el-bg-color: #0a0a1a;
+  --el-bg-color-overlay: #1a1a2e;
+  --el-text-color-primary: #ffffff;
+  --el-text-color-regular: rgba(255, 255, 255, 0.8);
+  --el-border-color: rgba(0, 191, 255, 0.15);
+  --el-border-color-light: rgba(0, 191, 255, 0.1);
+  --el-color-primary: #00bfff;
+}
+
+/* 日期选择器全局样式 */
+html.dark .el-date-picker__header {
+  color: #fff !important;
+}
+
+html.dark .el-date-picker__header-label {
+  color: #fff !important;
+}
+
+html.dark .el-picker-panel {
+  background: rgba(10, 10, 26, 0.95) !important;
+  border: 1px solid rgba(0, 191, 255, 0.15) !important;
+  border-radius: 15px !important;
+}
+
+html.dark .el-date-table th {
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+
+html.dark .el-date-table td {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+html.dark .el-date-table td.today .el-date-table-cell__text {
+  color: #00bfff !important;
+}
+
+html.dark .el-date-table td.current .el-date-table-cell__text {
+  background: rgba(0, 191, 255, 0.25) !important;
+  color: #00bfff !important;
+  border-radius: 15px !important;
+}
+
+html.dark .el-date-table td:hover .el-date-table-cell__text {
+  background: rgba(0, 191, 255, 0.15) !important;
+}
+
+html.dark .el-date-table td.available:hover .el-date-table-cell__text {
+  color: #00ffff !important;
+}
+
+html.dark .el-date-table td.disabled .el-date-table-cell__text {
+  color: rgba(255, 255, 255, 0.2) !important;
+}
+
+html.dark .el-picker-panel__icon-btn {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+html.dark .el-picker-panel__icon-btn:hover {
+  color: #00ffff !important;
+}
+
+/* 日期选择器全局样式 */
+html.dark .el-date-picker {
+  --el-datepicker-border-color: rgba(0, 191, 255, 0.2);
+}

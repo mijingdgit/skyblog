@@ -1,0 +1,123 @@
+{% extends 'dashboard.html' %}
+
+{% block header_title %}项目管理{% endblock %}
+{% block page_title %}项目管理{% endblock %}
+
+{% block main %}
+<div class="projects-page">
+    <!-- 搜索和筛选 -->
+    <div class="search-box">
+        <input type="text" name="search" class="form-input" placeholder="搜索项目名称、描述..." value="{{ search|default:'' }}">
+        <select name="is_published" class="form-input" style="width: auto; min-width: 120px;">
+            <option value="">全部状态</option>
+            <option value="true" {% if is_published == 'true' %}selected{% endif %}>已发布</option>
+            <option value="false" {% if is_published == 'false' %}selected{% endif %}>草稿</option>
+        </select>
+        <button type="submit" class="btn btn-primary">搜索</button>
+        <a href="/admin/projects/create/" class="btn btn-secondary">+ 新增项目</a>
+    </div>
+
+    <!-- 项目列表 -->
+    <div class="card">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>项目名称</th>
+                    <th>技术栈</th>
+                    <th>排序</th>
+                    <th>状态</th>
+                    <th>创建时间</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for project in projects %}
+                <tr>
+                    <td>{{ project.id }}</td>
+                    <td>
+                        <strong>{{ project.title }}</strong>
+                    </td>
+                    <td>
+                        <div class="tech-tags">
+                            {% for tech in project.tech_stack|slice:":3" %}
+                            <span class="tag">{{ tech }}</span>
+                            {% endfor %}
+                            {% if project.tech_stack|length > 3 %}
+                            <span class="tag">+{{ project.tech_stack|length|add:"-3" }}</span>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td>{{ project.order }}</td>
+                    <td>
+                        {% if project.is_published %}
+                        <span class="tag tag-success">已发布</span>
+                        {% else %}
+                        <span class="tag tag-danger">草稿</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ project.created_at|date:"Y-m-d" }}</td>
+                    <td>
+                        <div class="actions">
+                            <a href="/admin/projects/{{ project.id }}/" class="btn btn-secondary btn-sm">编辑</a>
+                            <button class="btn btn-danger btn-sm" onclick="deleteProject({{ project.id }})">删除</button>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" style="text-align: center; color: var(--text-muted);">
+                        暂无项目数据
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 分页 -->
+    {% if paginator %}
+    <div class="pagination">
+        {% if paginator.has_prev %}
+        <a href="?page={{ paginator.prev_page }}" class="pagination-item">‹</a>
+        {% endif %}
+
+        {% for p in paginator.pages %}
+        <a href="?page={{ p }}" class="pagination-item {% if p == paginator.current %}active{% endif %}">{{ p }}</a>
+        {% endfor %}
+
+        {% if paginator.has_next %}
+        <a href="?page={{ paginator.next_page }}" class="pagination-item">›</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.tech-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+</style>
+
+<script>
+function deleteProject(id) {
+    if (confirm('确定要删除该项目吗？此操作不可恢复。')) {
+        fetch(`/api/projects/${id}/`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        }).then(res => res.json())
+          .then(data => {
+              if (data.code === 200) {
+                  location.reload();
+              } else {
+                  alert(data.message || '删除失败');
+              }
+          });
+    }
+}
+</script>
+{% endblock %}

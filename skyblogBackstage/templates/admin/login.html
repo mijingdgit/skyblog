@@ -1,0 +1,52 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block bodyclass %}{{ block.super }} login{% endblock %}
+{% block nav-global %}{% endblock %}
+
+{% block content %}
+<div class="skyblog-login-shell">
+  <div class="skyblog-login-bg"></div>
+  <div class="skyblog-login-card">
+    <div class="skyblog-login-head">
+      <p class="skyblog-login-kicker">Django Admin</p>
+      <h1>SkyBlog 管理后台</h1>
+      <p class="skyblog-login-desc">在这里统一管理文章、分类、标签、项目与用户信息。</p>
+    </div>
+
+    {% if form.errors and not form.non_field_errors %}
+      <div class="skyblog-admin-alert error">用户名或密码不正确，请重新输入。</div>
+    {% endif %}
+
+    {% if form.non_field_errors %}
+      <div class="skyblog-admin-alert error">
+        {% for error in form.non_field_errors %}
+          <div>{{ error }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <form action="{{ app_path }}" method="post" id="login-form">
+      {% csrf_token %}
+      <div class="skyblog-form-grid single">
+        <div class="skyblog-field">
+          <label for="{{ form.username.id_for_label }}">用户名</label>
+          {{ form.username }}
+        </div>
+        <div class="skyblog-field">
+          <label for="{{ form.password.id_for_label }}">密码</label>
+          {{ form.password }}
+        </div>
+      </div>
+
+      {% if next %}
+        <input type="hidden" name="next" value="{{ next }}">
+      {% endif %}
+
+      <div class="submit-row">
+        <input type="submit" value="{% translate 'Log in' %}">
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

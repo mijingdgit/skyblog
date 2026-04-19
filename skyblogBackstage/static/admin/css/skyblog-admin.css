@@ -1,0 +1,497 @@
+html[data-theme="light"],
+:root {
+  --primary: #00bfff;
+  --primary-strong: #00ffff;
+  --primary-deep: #1e90ff;
+  --page-bg: #070b18;
+  --panel-bg: rgba(14, 18, 36, 0.88);
+  --panel-soft: rgba(255, 255, 255, 0.04);
+  --panel-hover: rgba(0, 191, 255, 0.1);
+  --border: rgba(0, 191, 255, 0.16);
+  --border-strong: rgba(0, 191, 255, 0.32);
+  --text-main: #f7fbff;
+  --text-muted: rgba(235, 245, 255, 0.68);
+  --danger: #ff6d7a;
+  --success: #61f1c4;
+  --warning: #ffc86b;
+  --link-fg: var(--primary);
+  --link-hover-color: var(--primary-strong);
+  --accent: linear-gradient(135deg, var(--primary), var(--primary-deep));
+  --header-bg: rgba(9, 12, 26, 0.92);
+  --header-link-color: rgba(255, 255, 255, 0.78);
+  --body-fg: var(--text-main);
+  --body-bg: transparent;
+  --hairline-color: var(--border);
+  --darkened-bg: rgba(255, 255, 255, 0.03);
+  --selected-bg: rgba(0, 191, 255, 0.16);
+  --selected-row: rgba(0, 191, 255, 0.1);
+  --message-success-bg: rgba(56, 217, 169, 0.12);
+  --message-warning-bg: rgba(255, 200, 107, 0.12);
+  --message-error-bg: rgba(255, 109, 122, 0.12);
+}
+
+body,
+textarea,
+input,
+select,
+button {
+  font-family: "Noto Sans SC", "Microsoft YaHei", sans-serif;
+}
+
+body {
+  background:
+    radial-gradient(circle at top, rgba(0, 191, 255, 0.12), transparent 32%),
+    radial-gradient(circle at bottom right, rgba(0, 255, 255, 0.08), transparent 24%),
+    #070b18;
+  color: var(--text-main);
+}
+
+a {
+  color: var(--link-fg);
+}
+
+a:hover {
+  color: var(--link-hover-color);
+}
+
+#container {
+  background: transparent;
+}
+
+#header {
+  background: rgba(9, 12, 26, 0.85);
+  backdrop-filter: blur(18px);
+  border-bottom: 1px solid var(--border);
+  color: var(--text-main);
+}
+
+#branding,
+#user-tools {
+  color: var(--text-main);
+}
+
+#branding h1 {
+  margin: 0;
+  font-family: "Orbitron", "Noto Sans SC", sans-serif;
+  font-size: 1.35rem;
+}
+
+.skyblog-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  font-family: "Orbitron", "Noto Sans SC", sans-serif;
+}
+
+.skyblog-brand__star {
+  color: var(--primary);
+  font-size: 1.4rem;
+  text-shadow: 0 0 16px rgba(0, 191, 255, 0.5);
+}
+
+.skyblog-brand__text {
+  background: linear-gradient(135deg, var(--primary), var(--primary-strong));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.skyblog-viewsite,
+#user-tools a,
+#logout-form button {
+  color: rgba(255, 255, 255, 0.76);
+}
+
+.skyblog-viewsite:hover,
+#user-tools a:hover,
+#logout-form button:hover {
+  color: var(--primary-strong);
+}
+
+#main {
+  padding: 24px;
+}
+
+#content {
+  background: rgba(12, 15, 30, 0.72);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 24px 28px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.24);
+}
+
+div.breadcrumbs {
+  margin: 0 0 16px;
+  padding: 14px 20px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  color: var(--text-muted);
+}
+
+div.breadcrumbs a {
+  color: var(--primary);
+}
+
+.module,
+.inline-group,
+.dashboard .module,
+#changelist-filter,
+.submit-row,
+.paginator,
+.object-tools a,
+.results,
+.form-row,
+.aligned .form-row,
+.selector,
+.selector-available,
+.selector-chosen {
+  border-radius: 18px;
+}
+
+.module,
+.inline-group,
+.selector,
+.selector-available,
+.selector-chosen,
+#changelist-filter {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+}
+
+.module h2,
+.module caption,
+.inline-group h2 {
+  background: transparent;
+  color: var(--text-main);
+  font-family: "Orbitron", "Noto Sans SC", sans-serif;
+  font-size: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+#nav-sidebar {
+  background: rgba(8, 11, 24, 0.92);
+  border-right: 1px solid var(--border);
+}
+
+#nav-filter {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  color: var(--text-main);
+}
+
+#nav-sidebar .current-model,
+#nav-sidebar .current-app .section:link,
+#nav-sidebar .current-app .section:visited {
+  background: rgba(0, 191, 255, 0.14);
+  color: var(--primary-strong);
+  border-radius: 14px;
+}
+
+#nav-sidebar a:link,
+#nav-sidebar a:visited {
+  color: rgba(255, 255, 255, 0.78);
+  border-radius: 12px;
+}
+
+#nav-sidebar a:hover {
+  background: rgba(0, 191, 255, 0.12);
+  color: var(--primary-strong);
+}
+
+.dashboard #content {
+  width: 100%;
+}
+
+.dashboard .module table th,
+.dashboard .module table td,
+#result_list th,
+#result_list td {
+  background: transparent;
+}
+
+table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+thead th {
+  background: rgba(0, 191, 255, 0.08);
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+}
+
+tbody tr {
+  background: transparent;
+}
+
+tbody tr:hover,
+tbody tr:nth-child(odd):hover {
+  background: rgba(0, 191, 255, 0.06);
+}
+
+tbody tr:nth-child(odd) {
+  background: rgba(255, 255, 255, 0.015);
+}
+
+.button,
+input[type="submit"],
+input[type="button"],
+.submit-row input,
+a.button,
+.object-tools a {
+  background: linear-gradient(135deg, var(--primary), var(--primary-deep));
+  color: #fff !important;
+  border: none;
+  border-radius: 12px;
+  padding: 10px 16px;
+  box-shadow: 0 10px 24px rgba(0, 191, 255, 0.24);
+}
+
+.button.default,
+input[type="submit"].default,
+.submit-row input.default {
+  background: linear-gradient(135deg, var(--primary), var(--primary-deep));
+}
+
+.button:hover,
+input[type="submit"]:hover,
+input[type="button"]:hover,
+.object-tools a:hover {
+  background: linear-gradient(135deg, var(--primary-strong), var(--primary));
+  transform: translateY(-1px);
+}
+
+.deletelink,
+a.deletelink,
+input[type="submit"].deletelink {
+  background: rgba(255, 109, 122, 0.14) !important;
+  color: #ff9da7 !important;
+  border: 1px solid rgba(255, 109, 122, 0.28) !important;
+  box-shadow: none;
+}
+
+input,
+textarea,
+select,
+.vTextField,
+.vLargeTextField {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  color: var(--text-main);
+  padding: 12px 14px;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--border-strong);
+  box-shadow: 0 0 0 3px rgba(0, 191, 255, 0.12);
+}
+
+textarea {
+  min-height: 140px;
+}
+
+.aligned .form-row,
+.form-row {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.aligned label,
+form .aligned p.help,
+.help,
+.helptext {
+  color: var(--text-muted);
+}
+
+.file-upload {
+  color: var(--text-muted);
+}
+
+.messagelist li {
+  border-radius: 16px;
+  border: 1px solid transparent;
+}
+
+.messagelist .success {
+  background: var(--message-success-bg);
+  border-color: rgba(97, 241, 196, 0.24);
+}
+
+.messagelist .warning {
+  background: var(--message-warning-bg);
+  border-color: rgba(255, 200, 107, 0.22);
+}
+
+.messagelist .error {
+  background: var(--message-error-bg);
+  border-color: rgba(255, 109, 122, 0.22);
+}
+
+.paginator {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+}
+
+.paginator a:link,
+.paginator a:visited {
+  color: var(--primary);
+}
+
+#changelist-filter h2,
+#changelist-filter h3 {
+  color: var(--text-main);
+  border-bottom: 1px solid var(--border);
+}
+
+#changelist-filter li.selected a {
+  color: var(--primary-strong);
+}
+
+.selector h2 {
+  border-radius: 18px 18px 0 0;
+}
+
+.selector-chosen .selector-filter,
+.selector-available .selector-filter {
+  padding: 12px;
+}
+
+.selector select {
+  min-height: 240px;
+}
+
+.calendarbox,
+.clockbox {
+  background: rgba(10, 12, 24, 0.98);
+  border: 1px solid var(--border);
+}
+
+.calendar caption,
+.calendarbox h2,
+.clockbox h2 {
+  background: rgba(0, 191, 255, 0.12);
+  color: var(--text-main);
+}
+
+.skyblog-login-shell {
+  min-height: calc(100vh - 120px);
+  display: grid;
+  place-items: center;
+  position: relative;
+  padding: 24px 0;
+}
+
+.skyblog-login-bg {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at top, rgba(0, 191, 255, 0.14), transparent 30%),
+    radial-gradient(circle at bottom right, rgba(0, 255, 255, 0.1), transparent 22%);
+  pointer-events: none;
+}
+
+.skyblog-login-card {
+  position: relative;
+  z-index: 1;
+  width: min(460px, 100%);
+  background: rgba(11, 14, 28, 0.82);
+  border: 1px solid var(--border);
+  border-radius: 28px;
+  padding: 36px 32px;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.28);
+}
+
+.skyblog-login-head h1 {
+  margin: 0 0 10px;
+  font-family: "Orbitron", "Noto Sans SC", sans-serif;
+  font-size: 2rem;
+}
+
+.skyblog-login-kicker {
+  margin: 0 0 10px;
+  color: var(--primary);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+}
+
+.skyblog-login-desc {
+  margin: 0 0 28px;
+  color: var(--text-muted);
+  line-height: 1.8;
+}
+
+.skyblog-form-grid.single {
+  display: grid;
+  gap: 16px;
+}
+
+.skyblog-field label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--text-muted);
+}
+
+.skyblog-field input {
+  width: 100%;
+}
+
+.skyblog-admin-alert {
+  margin-bottom: 18px;
+  padding: 12px 14px;
+  border-radius: 14px;
+}
+
+.skyblog-admin-alert.error {
+  background: rgba(255, 109, 122, 0.12);
+  border: 1px solid rgba(255, 109, 122, 0.22);
+  color: #ffb5bd;
+}
+
+.login #content {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+}
+
+.login .submit-row {
+  padding: 0;
+  margin-top: 22px;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+.login .submit-row input {
+  width: 100%;
+  padding: 14px 16px;
+  font-size: 1rem;
+}
+
+@media (max-width: 1024px) {
+  #main {
+    padding: 16px;
+  }
+
+  #content {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 767px) {
+  #content {
+    border-radius: 20px;
+    padding: 18px;
+  }
+
+  .skyblog-login-card {
+    padding: 28px 22px;
+  }
+}

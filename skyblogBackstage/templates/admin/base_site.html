@@ -1,0 +1,23 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block title %}{{ title }} | SkyBlog 管理后台{% endblock %}
+
+{% block extrastyle %}
+  {{ block.super }}
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'admin/css/skyblog-admin.css' %}">
+{% endblock %}
+
+{% block branding %}
+  <a href="{% url 'admin:index' %}" class="skyblog-brand">
+    <span class="skyblog-brand__star">*</span>
+    <span class="skyblog-brand__text">SkyBlog</span>
+  </a>
+{% endblock %}
+
+{% block nav-global %}
+  <a class="skyblog-viewsite" href="/" target="_blank" rel="noreferrer">查看站点</a>
+{% endblock %}

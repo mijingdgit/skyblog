@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}SkyBlog 管理后台{% endblock %}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #00BFFF;
+            --primary-dark: #0099CC;
+            --secondary: #1E90FF;
+            --accent: #00FFFF;
+            --bg-dark: #0a0a1a;
+            --bg-card: rgba(255, 255, 255, 0.03);
+            --bg-card-hover: rgba(255, 255, 255, 0.05);
+            --border-color: rgba(0, 191, 255, 0.15);
+            --text-white: #ffffff;
+            --text-muted: rgba(255, 255, 255, 0.7);
+            --danger: #ff3b30;
+            --success: #34c759;
+            --warning: #ff9500;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans SC', 'Microsoft YaHei', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-white);
+            min-height: 100vh;
+        }
+
+        /* 滚动条 */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-dark);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, var(--primary), var(--secondary));
+            border-radius: 4px;
+        }
+
+        /* 通用按钮 */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(0, 191, 255, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 191, 255, 0.5);
+        }
+
+        .btn-secondary {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-white);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-card-hover);
+            border-color: var(--primary);
+        }
+
+        .btn-danger {
+            background: rgba(255, 59, 48, 0.15);
+            border: 1px solid rgba(255, 59, 48, 0.3);
+            color: var(--danger);
+        }
+
+        .btn-danger:hover {
+            background: rgba(255, 59, 48, 0.25);
+        }
+
+        .btn-sm {
+            padding: 6px 14px;
+            font-size: 0.85rem;
+        }
+
+        /* 输入框 */
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            color: var(--text-white);
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-input::placeholder {
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: rgba(0, 191, 255, 0.08);
+        }
+
+        /* 卡片 */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+        }
+
+        .card:hover {
+            border-color: rgba(0, 191, 255, 0.3);
+        }
+
+        /* 表格 */
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table th,
+        .table td {
+            padding: 16px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .table th {
+            background: rgba(0, 191, 255, 0.05);
+            font-weight: 500;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .table tr:hover {
+            background: var(--bg-card-hover);
+        }
+
+        /* 标签 */
+        .tag {
+            display: inline-block;
+            padding: 4px 12px;
+            background: rgba(0, 191, 255, 0.15);
+            border-radius: 15px;
+            font-size: 0.8rem;
+            color: var(--primary);
+        }
+
+        .tag-success {
+            background: rgba(52, 199, 89, 0.15);
+            color: var(--success);
+        }
+
+        .tag-danger {
+            background: rgba(255, 59, 48, 0.15);
+            color: var(--danger);
+        }
+
+        /* 分页 */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 24px;
+        }
+
+        .pagination-item {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .pagination-item:hover,
+        .pagination-item.active {
+            background: rgba(0, 191, 255, 0.15);
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        /* 搜索框 */
+        .search-box {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .search-box .form-input {
+            flex: 1;
+            max-width: 400px;
+        }
+
+        /* 操作按钮组 */
+        .actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .search-box {
+                flex-direction: column;
+            }
+            .search-box .form-input {
+                max-width: 100%;
+            }
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    {% block content %}{% endblock %}
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

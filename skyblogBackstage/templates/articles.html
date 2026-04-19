@@ -1,0 +1,141 @@
+{% extends 'dashboard.html' %}
+
+{% block header_title %}文章管理{% endblock %}
+{% block page_title %}文章管理{% endblock %}
+
+{% block main %}
+<div class="articles-page">
+    <!-- 搜索和筛选 -->
+    <div class="search-box">
+        <input type="text" name="search" class="form-input" placeholder="搜索文章标题、内容..." value="{{ search|default:'' }}">
+        <select name="category" class="form-input" style="width: auto; min-width: 150px;">
+            <option value="">全部分类</option>
+            {% for cat in categories %}
+            <option value="{{ cat.id }}" {% if category == cat.id|stringformat:"s" %}selected{% endif %}>{{ cat.name }}</option>
+            {% endfor %}
+        </select>
+        <select name="is_published" class="form-input" style="width: auto; min-width: 120px;">
+            <option value="">全部状态</option>
+            <option value="true" {% if is_published == 'true' %}selected{% endif %}>已发布</option>
+            <option value="false" {% if is_published == 'false' %}selected{% endif %}>草稿</option>
+        </select>
+        <button type="submit" class="btn btn-primary">搜索</button>
+        <a href="/admin/articles/create/" class="btn btn-secondary">+ 新增文章</a>
+    </div>
+
+    <!-- 文章列表 -->
+    <div class="card">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>标题</th>
+                    <th>分类</th>
+                    <th>作者</th>
+                    <th>阅读量</th>
+                    <th>状态</th>
+                    <th>发布时间</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for article in articles %}
+                <tr>
+                    <td>{{ article.id }}</td>
+                    <td>
+                        <div style="max-width: 300px;">
+                            <strong>{{ article.title }}</strong>
+                            {% if article.is_featured %}
+                            <span class="tag tag-success" style="margin-left: 8px;">推荐</span>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td>{{ article.category.name|default:'-' }}</td>
+                    <td>{{ article.author.nickname|default:article.author.username|default:'-' }}</td>
+                    <td>{{ article.views }}</td>
+                    <td>
+                        {% if article.is_published %}
+                        <span class="tag tag-success">已发布</span>
+                        {% else %}
+                        <span class="tag tag-danger">草稿</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ article.published_at|date:"Y-m-d"|default:'-' }}</td>
+                    <td>
+                        <div class="actions">
+                            <a href="/admin/articles/{{ article.id }}/" class="btn btn-secondary btn-sm">编辑</a>
+                            {% if article.is_published %}
+                            <button class="btn btn-secondary btn-sm" onclick="togglePublish({{ article.id }}, false)">下架</button>
+                            {% else %}
+                            <button class="btn btn-primary btn-sm" onclick="togglePublish({{ article.id }}, true)">发布</button>
+                            {% endif %}
+                            <button class="btn btn-danger btn-sm" onclick="deleteArticle({{ article.id }})">删除</button>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" style="text-align: center; color: var(--text-muted);">
+                        暂无文章数据
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 分页 -->
+    {% if paginator %}
+    <div class="pagination">
+        {% if paginator.has_prev %}
+        <a href="?page={{ paginator.prev_page }}{% if search %}&search={{ search }}{% endif %}{% if category %}&category={{ category }}{% endif %}" class="pagination-item">‹</a>
+        {% endif %}
+
+        {% for p in paginator.pages %}
+        <a href="?page={{ p }}{% if search %}&search={{ search }}{% endif %}{% if category %}&category={{ category }}{% endif %}" class="pagination-item {% if p == paginator.current %}active{% endif %}">{{ p }}</a>
+        {% endfor %}
+
+        {% if paginator.has_next %}
+        <a href="?page={{ paginator.next_page }}{% if search %}&search={{ search }}{% endif %}{% if category %}&category={{ category }}{% endif %}" class="pagination-item">›</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function togglePublish(id, publish) {
+    const endpoint = publish ? `/api/articles/${id}/publish/` : `/api/articles/${id}/unpublish/`;
+    fetch(endpoint, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}'
+        }
+    }).then(res => res.json())
+      .then(data => {
+          if (data.code === 200) {
+              location.reload();
+          } else {
+              alert(data.message || '操作失败');
+          }
+      });
+}
+
+function deleteArticle(id) {
+    if (confirm('确定要删除该文章吗？此操作不可恢复。')) {
+        fetch(`/api/articles/${id}/`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        }).then(res => res.json())
+          .then(data => {
+              if (data.code === 200) {
+                  location.reload();
+              } else {
+                  alert(data.message || '删除失败');
+              }
+          });
+    }
+}
+</script>
+{% endblock %}

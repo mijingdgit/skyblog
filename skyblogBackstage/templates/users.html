@@ -1,0 +1,116 @@
+{% extends 'dashboard.html' %}
+
+{% block header_title %}用户管理{% endblock %}
+{% block page_title %}用户管理{% endblock %}
+
+{% block main %}
+<div class="users-page">
+    <!-- 搜索和筛选 -->
+    <div class="search-box">
+        <input type="text" name="search" class="form-input" placeholder="搜索用户名、昵称、邮箱..." value="{{ search|default:'' }}">
+        <select name="role" class="form-input" style="width: auto; min-width: 150px;">
+            <option value="">全部角色</option>
+            <option value="admin" {% if role == 'admin' %}selected{% endif %}>管理员</option>
+            <option value="editor" {% if role == 'editor' %}selected{% endif %}>编辑</option>
+            <option value="user" {% if role == 'user' %}selected{% endif %}>普通用户</option>
+        </select>
+        <button type="submit" class="btn btn-primary">搜索</button>
+        <a href="/admin/users/create/" class="btn btn-secondary">+ 新增用户</a>
+    </div>
+
+    <!-- 用户列表 -->
+    <div class="card">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>用户名</th>
+                    <th>昵称</th>
+                    <th>邮箱</th>
+                    <th>角色</th>
+                    <th>状态</th>
+                    <th>注册时间</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td>{{ user.id }}</td>
+                    <td>{{ user.username }}</td>
+                    <td>{{ user.nickname|default:'-' }}</td>
+                    <td>{{ user.email|default:'-' }}</td>
+                    <td>
+                        {% if user.role == 'admin' %}
+                        <span class="tag">管理员</span>
+                        {% elif user.role == 'editor' %}
+                        <span class="tag" style="background: rgba(255, 149, 0, 0.15); color: #ff9500;">编辑</span>
+                        {% else %}
+                        <span class="tag">用户</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if user.is_active %}
+                        <span class="tag tag-success">正常</span>
+                        {% else %}
+                        <span class="tag tag-danger">禁用</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ user.date_joined|date:"Y-m-d" }}</td>
+                    <td>
+                        <div class="actions">
+                            <a href="/admin/users/{{ user.id }}/" class="btn btn-secondary btn-sm">编辑</a>
+                            <a href="/admin/users/{{ user.id }}/permission/" class="btn btn-secondary btn-sm">权限</a>
+                            <button class="btn btn-danger btn-sm" onclick="deleteUser({{ user.id }})">删除</button>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" style="text-align: center; color: var(--text-muted);">
+                        暂无用户数据
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 分页 -->
+    {% if paginator %}
+    <div class="pagination">
+        {% if paginator.has_prev %}
+        <a href="?page={{ paginator.prev_page }}" class="pagination-item">‹</a>
+        {% endif %}
+
+        {% for p in paginator.pages %}
+        <a href="?page={{ p }}" class="pagination-item {% if p == paginator.current %}active{% endif %}">{{ p }}</a>
+        {% endfor %}
+
+        {% if paginator.has_next %}
+        <a href="?page={{ paginator.next_page }}" class="pagination-item">›</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function deleteUser(id) {
+    if (confirm('确定要删除该用户吗？此操作不可恢复。')) {
+        fetch(`/api/users/${id}/`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        }).then(res => res.json())
+          .then(data => {
+              if (data.code === 200) {
+                  location.reload();
+              } else {
+                  alert(data.message || '删除失败');
+              }
+          });
+    }
+}
+</script>
+{% endblock %}
