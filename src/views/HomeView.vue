@@ -1,8 +1,14 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
-import { fetchPublicCategories, fetchPublishedArticles, fetchPublishedProjects } from '../api/public'
-import type { AdminArticle, AdminCategory, AdminProject } from '../types/admin'
+import {
+  fetchAboutProfile,
+  fetchPublicCategories,
+  fetchPublicTags,
+  fetchPublishedArticles,
+  fetchPublishedProjects,
+} from '../api/public'
+import type { AboutProfile, AdminArticle, AdminCategory, AdminProject, AdminTag } from '../types/admin'
 import {
   buildTagCounts,
   formatDate,
@@ -13,31 +19,109 @@ import {
 const categories = ref<AdminCategory[]>([])
 const articles = ref<AdminArticle[]>([])
 const projects = ref<AdminProject[]>([])
+const tags = ref<AdminTag[]>([])
+const aboutProfile = ref<AboutProfile | null>(null)
 const hoverProject = ref<number | null>(null)
 const isLoading = ref(true)
 const loadError = ref('')
 
 const latestArticles = computed(() => sortArticlesByLatest(articles.value).slice(0, 6))
 const popularArticles = computed(() => sortArticlesByViews(articles.value).slice(0, 5))
-const tagCounts = computed(() => buildTagCounts(articles.value))
+const tagCounts = computed(() => {
+  if (tags.value.length === 0) {
+    return buildTagCounts(articles.value)
+  }
+
+  return tags.value
+    .map((tag) => ({
+      name: tag.name,
+      count: tag.article_count ?? 0,
+    }))
+    .sort((left, right) => right.count - left.count)
+})
 const featuredProjects = computed(() => [...projects.value].sort((a, b) => a.order - b.order).slice(0, 3))
+const aboutTitle = computed(() => aboutProfile.value?.page_title || '关于本站')
+const aboutTitlePrefix = computed(() => {
+  const title = aboutTitle.value
+
+  if (title.includes('本站')) {
+    return title.replace('本站', '')
+  }
+
+  if (title.includes('我')) {
+    return title.replace('我', '')
+  }
+
+  return '关于'
+})
+const aboutTitleAccent = computed(() => {
+  const title = aboutTitle.value
+
+  if (title.includes('本站')) {
+    return '本站'
+  }
+
+  if (title.includes('我')) {
+    return '我'
+  }
+
+  return title.replace(/^关于/, '') || '本站'
+})
+const aboutParagraphs = computed(() => {
+  const profile = aboutProfile.value
+
+  if (!profile) {
+    return [
+      '这个首页现在直接读取 Django 后台里发布的文章、标签、分类和项目，你在管理后台新增或修改内容后，前台刷新就会同步更新。',
+      '接下来我们还可以继续补 SEO、文章阅读详情优化、部署配置和对象存储，让它更接近真正上线版本。',
+    ]
+  }
+
+  const paragraphs = [
+    profile.page_description,
+    profile.slogan,
+    ...(Array.isArray(profile.intro_paragraphs) ? profile.intro_paragraphs.slice(0, 2) : []),
+  ].filter(Boolean)
+
+  return paragraphs.length > 0 ? paragraphs : ['后台关于资料已接入，编辑 Django 管理后台后首页会同步更新。']
+})
+const aboutAvatarText = computed(
+  () => aboutProfile.value?.avatar_text || aboutProfile.value?.name?.slice(0, 1) || 'S',
+)
 
 function estimateReadTime(content: string) {
   const minutes = Math.max(1, Math.round(content.replace(/\s+/g, '').length / 500))
   return `${minutes} 分钟阅读`
 }
 
+function isProjectImage(value?: string) {
+  if (!value) {
+    return false
+  }
+
+  return (
+    value.startsWith('/media/') ||
+    value.startsWith('/static/') ||
+    /^https?:\/\//.test(value) ||
+    /\.(jpe?g|png|webp|gif|svg)(\?.*)?$/i.test(value)
+  )
+}
+
 onMounted(async () => {
   try {
-    const [categoryData, articleData, projectData] = await Promise.all([
+    const [categoryData, tagData, articleData, projectData, aboutData] = await Promise.all([
       fetchPublicCategories(),
+      fetchPublicTags(),
       fetchPublishedArticles(),
       fetchPublishedProjects(),
+      fetchAboutProfile(),
     ])
 
     categories.value = categoryData
+    tags.value = tagData
     articles.value = articleData
     projects.value = projectData
+    aboutProfile.value = aboutData
   } catch {
     loadError.value = '公开内容加载失败，请确认 Django API 已启动。'
   } finally {
@@ -115,7 +199,9 @@ onMounted(async () => {
               :to="`/category/${category.slug}`"
               class="category-card"
             >
-              <span class="category-icon">{{ category.icon || category.name.slice(0, 1) }}</span>
+              <span class="category-icon" :title="category.icon || category.name.slice(0, 1)">
+                {{ category.icon || category.name.slice(0, 1) }}
+              </span>
               <h3 class="category-name">{{ category.name }}</h3>
               <p class="category-desc">{{ category.description }}</p>
               <span class="category-count">{{ category.article_count }} 篇文章</span>
@@ -223,8 +309,19 @@ onMounted(async () => {
               @mouseenter="hoverProject = project.id"
               @mouseleave="hoverProject = null"
             >
-              <div class="project-visual" :class="{ hover: hoverProject === project.id }">
-                <span class="project-icon">{{ project.image || 'P' }}</span>
+              <div
+                class="project-visual"
+                :class="{ hover: hoverProject === project.id, 'has-image': isProjectImage(project.image) }"
+              >
+                <img
+                  v-if="isProjectImage(project.image)"
+                  :src="project.image"
+                  :alt="project.title"
+                  class="project-image"
+                  loading="lazy"
+                  decoding="async"
+                />
+                <span v-else class="project-icon">{{ project.image || 'P' }}</span>
               </div>
               <div class="project-info">
                 <h3>{{ project.title }}</h3>
@@ -245,14 +342,10 @@ onMounted(async () => {
           <div class="about-content">
             <div class="about-text">
               <h2 class="section-title">
-                关于<span class="accent">本站</span>
+                {{ aboutTitlePrefix }}<span class="accent">{{ aboutTitleAccent }}</span>
               </h2>
-              <p>
-                这个首页现在直接读取 Django 后台里发布的文章、标签、分类和项目，
-                你在管理后台新增或修改内容后，前台刷新就会同步更新。
-              </p>
-              <p>
-                接下来我们还可以继续补 SEO、文章阅读详情优化、部署配置和对象存储，让它更接近真正上线版本。
+              <p v-for="paragraph in aboutParagraphs.slice(0, 3)" :key="paragraph">
+                {{ paragraph }}
               </p>
               <RouterLink to="/about" class="btn-outline">
                 了解更多
@@ -262,7 +355,7 @@ onMounted(async () => {
               <div class="avatar-ring"></div>
               <div class="avatar-ring ring-2"></div>
               <div class="avatar-inner">
-                <span>S</span>
+                <span>{{ aboutAvatarText }}</span>
               </div>
             </div>
           </div>
@@ -543,15 +636,24 @@ onMounted(async () => {
 }
 
 .category-icon {
-  font-size: 2rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 52px;
   height: 52px;
+  box-sizing: border-box;
   margin-bottom: 16px;
+  padding: 0 8px;
   border-radius: 16px;
   background: rgba(0, 191, 255, 0.12);
+  color: #c9a7ff;
+  font-size: 1.1rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .category-name,
@@ -705,8 +807,24 @@ onMounted(async () => {
   transition: all 0.3s ease;
 }
 
+.project-visual.has-image {
+  background: rgba(5, 12, 26, 0.72);
+  overflow: hidden;
+}
+
 .project-visual.hover {
   background: linear-gradient(135deg, rgba(0, 191, 255, 0.2), rgba(0, 255, 255, 0.1));
+}
+
+.project-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.35s ease;
+}
+
+.project-card:hover .project-image {
+  transform: scale(1.04);
 }
 
 .project-icon {

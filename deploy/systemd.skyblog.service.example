@@ -1,0 +1,27 @@
+# Example systemd service for the Django backend.
+# Copy to /etc/systemd/system/skyblog.service and adjust paths/user/group.
+
+[Unit]
+Description=SkyBlog Django backend
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/skyblog/skyblogBackstage
+EnvironmentFile=/var/www/skyblog/skyblogBackstage/.env
+ExecStart=/var/www/skyblog/.venv/bin/gunicorn skyblog.wsgi:application --bind 127.0.0.1:8000 --workers 3 --timeout 120
+Restart=always
+RestartSec=5
+UMask=0077
+
+# Basic process hardening. Keep skyblogBackstage writable because SQLite and media uploads live there.
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=full
+ReadWritePaths=/var/www/skyblog/skyblogBackstage
+
+[Install]
+WantedBy=multi-user.target

@@ -1,7 +1,7 @@
 from django.contrib import admin
 
-from .forms import ArticleAdminForm
-from .models import Article, Category, Tag
+from .forms import AboutProfileAdminForm, ArticleAdminForm
+from .models import AboutProfile, Article, Category, Tag
 
 
 @admin.register(Category)
@@ -21,6 +21,7 @@ class TagAdmin(admin.ModelAdmin):
 @admin.register(Article)
 class ArticleAdmin(admin.ModelAdmin):
     form = ArticleAdminForm
+    readonly_fields = ["xmind_file"]
     list_display = [
         "title",
         "category",
@@ -40,7 +41,7 @@ class ArticleAdmin(admin.ModelAdmin):
         (
             "内容导入",
             {
-                "fields": ("source_file",),
+                "fields": ("source_file", "xmind_file"),
                 "description": "上传 Markdown、XMind 或 Word 文件后，保存时会自动提取正文；Markdown 中可访问的本地图片也会一并复制到站点媒体目录。",
             },
         ),
@@ -61,6 +62,63 @@ class ArticleAdmin(admin.ModelAdmin):
                     "is_featured",
                     "published_at",
                 ),
+            },
+        ),
+    )
+
+
+@admin.register(AboutProfile)
+class AboutProfileAdmin(admin.ModelAdmin):
+    form = AboutProfileAdminForm
+    list_display = ["page_title", "name", "title", "is_active", "updated_at"]
+    list_filter = ["is_active", "updated_at"]
+    search_fields = ["name", "title", "slogan", "page_description"]
+    fieldsets = (
+        (
+            "基础信息",
+            {
+                "fields": (
+                    "is_active",
+                    "name",
+                    "title",
+                    "location",
+                    "email",
+                    "github",
+                    "slogan",
+                    "avatar_text",
+                ),
+            },
+        ),
+        (
+            "页面文案",
+            {
+                "fields": (
+                    "page_title",
+                    "page_description",
+                    "intro_title",
+                    "intro_paragraphs_text",
+                ),
+                "description": "简介段落改为每行一段，不需要手写 JSON。",
+            },
+        ),
+        (
+            "模块数据",
+            {
+                "fields": (
+                    "skills_text",
+                    "directions_text",
+                    "experiences_text",
+                    "certifications_text",
+                    "tools_text",
+                    "abilities_text",
+                ),
+                "description": "每个模块使用说明中的分隔格式填写，保存后自动转成前台需要的数据结构。",
+            },
+        ),
+        (
+            "联系区域",
+            {
+                "fields": ("contact_title", "contact_description"),
             },
         ),
     )

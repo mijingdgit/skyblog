@@ -1,28 +1,83 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
-import { fetchPublishedProjects } from '../api/public'
-import type { AdminProject } from '../types/admin'
+import { fetchProjectPageContent, fetchPublishedProjects } from '../api/public'
+import type { AdminProject, ProjectPageContent, ProjectPageFilter } from '../types/admin'
 import { filterProjectsByPreset } from '../utils/content'
+
+type ProjectAction = {
+  key: 'github' | 'demo'
+  tooltip: string
+  emptyTooltip: string
+}
 
 const activeFilter = ref('all')
 const hoverProject = ref<number | null>(null)
 const projects = ref<AdminProject[]>([])
+const pageContent = ref<ProjectPageContent | null>(null)
 const isLoading = ref(true)
 const loadError = ref('')
 
-const filters = [
+const defaultFilters: ProjectPageFilter[] = [
   { key: 'all', label: '全部' },
   { key: 'llm', label: 'AI / 大模型' },
   { key: 'frontend', label: '前端项目' },
   { key: 'backend', label: '后端项目' },
 ]
 
+const projectActions: ProjectAction[] = [
+  {
+    key: 'github',
+    tooltip: '查看 GitHub 仓库',
+    emptyTooltip: '暂未提供 GitHub 仓库地址',
+  },
+  {
+    key: 'demo',
+    tooltip: '查看在线演示',
+    emptyTooltip: '暂未提供在线演示地址',
+  },
+]
+
+const filters = computed(() => {
+  const backendFilters = pageContent.value?.filters
+  return Array.isArray(backendFilters) && backendFilters.length > 0 ? backendFilters : defaultFilters
+})
 const filteredProjects = computed(() => filterProjectsByPreset(projects.value, activeFilter.value))
 const techCount = computed(() => new Set(projects.value.flatMap((project) => project.tech_stack)).size)
 
+function getProjectActionUrl(project: AdminProject, key: ProjectAction['key']) {
+  return key === 'github' ? project.github : project.demo
+}
+
+function getProjectActionTooltip(project: AdminProject, action: ProjectAction) {
+  return getProjectActionUrl(project, action.key) ? action.tooltip : action.emptyTooltip
+}
+
+function isProjectImage(value?: string) {
+  if (!value) {
+    return false
+  }
+
+  return (
+    value.startsWith('/media/') ||
+    value.startsWith('/static/') ||
+    /^https?:\/\//.test(value) ||
+    /\.(jpe?g|png|webp|gif|svg)(\?.*)?$/i.test(value)
+  )
+}
+
 onMounted(async () => {
   try {
-    projects.value = await fetchPublishedProjects()
+    const [projectData, pageData] = await Promise.all([
+      fetchPublishedProjects(),
+      fetchProjectPageContent(),
+    ])
+
+    projects.value = projectData
+    pageContent.value = pageData
+
+    if (!filters.value.some((filter) => filter.key === activeFilter.value)) {
+      activeFilter.value = filters.value[0]?.key || 'all'
+    }
   } catch {
     loadError.value = '项目内容加载失败，请确认 Django API 已启动。'
   } finally {
@@ -35,8 +90,12 @@ onMounted(async () => {
   <div class="projects-page">
     <section class="page-header">
       <div class="container">
-        <h1 class="page-title">项目<span class="accent">作品</span></h1>
-        <p class="page-desc">这里展示的项目内容，已经改为直接读取后台已发布数据。</p>
+        <h1 class="page-title">
+          {{ pageContent?.title_prefix || '项目' }}<span class="accent">{{ pageContent?.title_accent || '作品' }}</span>
+        </h1>
+        <p class="page-desc">
+          {{ pageContent?.description || '这里展示的项目内容，已经改为直接读取后台已发布数据。' }}
+        </p>
 
         <div class="filters">
           <button
@@ -71,36 +130,87 @@ onMounted(async () => {
               @mouseenter="hoverProject = project.id"
               @mouseleave="hoverProject = null"
             >
-              <div class="project-visual" :class="{ hover: hoverProject === project.id }">
+              <div
+                class="project-visual"
+                :class="{ hover: hoverProject === project.id, 'has-image': isProjectImage(project.image) }"
+              >
                 <div class="visual-content">
-                  <span class="project-icon">{{ project.image || project.title.slice(0, 1) }}</span>
+                  <img
+                    v-if="isProjectImage(project.image)"
+                    :src="project.image"
+                    :alt="project.title"
+                    class="project-image"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                  <span v-else class="project-icon">{{ project.image || project.title.slice(0, 1) }}</span>
                 </div>
               </div>
 
               <div class="project-body">
                 <div class="project-header">
                   <h2 class="project-title">{{ project.title }}</h2>
-                  <div class="project-links">
-                    <a
-                      v-if="project.github"
-                      :href="project.github"
-                      target="_blank"
-                      rel="noreferrer"
-                      class="link-btn"
-                      title="GitHub"
-                    >
-                      GitHub
-                    </a>
-                    <a
-                      v-if="project.demo"
-                      :href="project.demo"
-                      target="_blank"
-                      rel="noreferrer"
-                      class="link-btn"
-                      title="在线演示"
-                    >
-                      Demo
-                    </a>
+                  <div class="project-links" aria-label="项目链接">
+                    <template v-for="action in projectActions" :key="action.key">
+                      <a
+                        v-if="getProjectActionUrl(project, action.key)"
+                        :href="getProjectActionUrl(project, action.key)"
+                        target="_blank"
+                        rel="noreferrer"
+                        class="link-icon"
+                        :title="getProjectActionTooltip(project, action)"
+                        :aria-label="getProjectActionTooltip(project, action)"
+                      >
+                        <svg
+                          v-if="action.key === 'github'"
+                          viewBox="0 0 24 24"
+                          aria-hidden="true"
+                        >
+                          <path
+                            d="M12 2C6.48 2 2 6.59 2 12.25c0 4.53 2.87 8.37 6.84 9.73.5.1.68-.22.68-.49 0-.24-.01-1.05-.01-1.9-2.78.62-3.37-1.22-3.37-1.22-.45-1.2-1.11-1.51-1.11-1.51-.91-.64.07-.63.07-.63 1 .07 1.53 1.06 1.53 1.06.9 1.57 2.35 1.12 2.92.86.09-.67.35-1.12.63-1.38-2.22-.26-4.56-1.14-4.56-5.09 0-1.13.39-2.05 1.03-2.78-.1-.26-.45-1.31.1-2.73 0 0 .84-.28 2.75 1.06A9.3 9.3 0 0 1 12 6.85c.85 0 1.71.12 2.51.36 1.91-1.34 2.75-1.06 2.75-1.06.55 1.42.2 2.47.1 2.73.64.73 1.03 1.65 1.03 2.78 0 3.96-2.35 4.82-4.58 5.08.36.32.68.95.68 1.92 0 1.38-.01 2.49-.01 2.83 0 .27.18.59.69.49A10.26 10.26 0 0 0 22 12.25C22 6.59 17.52 2 12 2Z"
+                          />
+                        </svg>
+                        <svg
+                          v-else
+                          viewBox="0 0 24 24"
+                          aria-hidden="true"
+                        >
+                          <path
+                            d="M14 3h7v7h-2V6.41l-8.29 8.3-1.42-1.42 8.3-8.29H14V3Zm5 16H5V5h7V3H5a2 2 0 0 0-2 2v14c0 1.11.89 2 2 2h14a2 2 0 0 0 2-2v-7h-2v7Z"
+                          />
+                        </svg>
+                        <span class="tooltip">{{ getProjectActionTooltip(project, action) }}</span>
+                      </a>
+
+                      <button
+                        v-else
+                        type="button"
+                        class="link-icon is-disabled"
+                        :title="getProjectActionTooltip(project, action)"
+                        :aria-label="getProjectActionTooltip(project, action)"
+                        tabindex="-1"
+                      >
+                        <svg
+                          v-if="action.key === 'github'"
+                          viewBox="0 0 24 24"
+                          aria-hidden="true"
+                        >
+                          <path
+                            d="M12 2C6.48 2 2 6.59 2 12.25c0 4.53 2.87 8.37 6.84 9.73.5.1.68-.22.68-.49 0-.24-.01-1.05-.01-1.9-2.78.62-3.37-1.22-3.37-1.22-.45-1.2-1.11-1.51-1.11-1.51-.91-.64.07-.63.07-.63 1 .07 1.53 1.06 1.53 1.06.9 1.57 2.35 1.12 2.92.86.09-.67.35-1.12.63-1.38-2.22-.26-4.56-1.14-4.56-5.09 0-1.13.39-2.05 1.03-2.78-.1-.26-.45-1.31.1-2.73 0 0 .84-.28 2.75 1.06A9.3 9.3 0 0 1 12 6.85c.85 0 1.71.12 2.51.36 1.91-1.34 2.75-1.06 2.75-1.06.55 1.42.2 2.47.1 2.73.64.73 1.03 1.65 1.03 2.78 0 3.96-2.35 4.82-4.58 5.08.36.32.68.95.68 1.92 0 1.38-.01 2.49-.01 2.83 0 .27.18.59.69.49A10.26 10.26 0 0 0 22 12.25C22 6.59 17.52 2 12 2Z"
+                          />
+                        </svg>
+                        <svg
+                          v-else
+                          viewBox="0 0 24 24"
+                          aria-hidden="true"
+                        >
+                          <path
+                            d="M14 3h7v7h-2V6.41l-8.29 8.3-1.42-1.42 8.3-8.29H14V3Zm5 16H5V5h7V3H5a2 2 0 0 0-2 2v14c0 1.11.89 2 2 2h14a2 2 0 0 0 2-2v-7h-2v7Z"
+                          />
+                        </svg>
+                        <span class="tooltip">{{ getProjectActionTooltip(project, action) }}</span>
+                      </button>
+                    </template>
                   </div>
                 </div>
 
@@ -265,6 +375,10 @@ onMounted(async () => {
   overflow: hidden;
 }
 
+.project-visual.has-image {
+  background: rgba(5, 12, 26, 0.72);
+}
+
 .project-visual::before {
   content: '';
   position: absolute;
@@ -272,6 +386,28 @@ onMounted(async () => {
   background: radial-gradient(circle at 50% 50%, rgba(0, 191, 255, 0.15) 0%, transparent 70%);
   opacity: 0;
   transition: opacity 0.3s;
+}
+
+.visual-content,
+.project-image {
+  width: 100%;
+  height: 100%;
+}
+
+.visual-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.project-image {
+  display: block;
+  object-fit: cover;
+  transition: transform 0.35s ease;
+}
+
+.project-card:hover .project-image {
+  transform: scale(1.04);
 }
 
 .project-card:hover .project-visual::before {
@@ -297,7 +433,7 @@ onMounted(async () => {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 12px;
+  gap: 16px;
   margin-bottom: 12px;
 }
 
@@ -309,26 +445,93 @@ onMounted(async () => {
 
 .project-links {
   display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  min-width: 88px;
+  justify-content: flex-end;
 }
 
-.link-btn {
-  padding: 6px 10px;
+.link-icon {
+  position: relative;
+  width: 40px;
+  height: 40px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  padding: 0;
   background: rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
-  color: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(0, 191, 255, 0.18);
+  border-radius: 12px;
+  color: rgba(255, 255, 255, 0.76);
   text-decoration: none;
-  font-size: 0.8rem;
-  transition: all 0.3s;
+  transition: all 0.3s ease;
 }
 
-.link-btn:hover {
-  background: rgba(0, 191, 255, 0.15);
+.link-icon svg {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
+}
+
+.link-icon:hover {
+  background: rgba(0, 191, 255, 0.14);
+  border-color: rgba(0, 191, 255, 0.45);
   color: #00ffff;
+  transform: translateY(-2px);
+}
+
+.link-icon.is-disabled {
+  cursor: default;
+  color: rgba(255, 255, 255, 0.28);
+  border-color: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.link-icon.is-disabled:hover {
+  transform: none;
+  color: rgba(255, 255, 255, 0.45);
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.tooltip {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 10px);
+  transform: translateX(-50%) translateY(4px);
+  min-width: max-content;
+  max-width: 180px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: rgba(8, 16, 32, 0.94);
+  border: 1px solid rgba(0, 191, 255, 0.18);
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 0.75rem;
+  line-height: 1.4;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.32);
+}
+
+.tooltip::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  width: 8px;
+  height: 8px;
+  background: rgba(8, 16, 32, 0.94);
+  border-right: 1px solid rgba(0, 191, 255, 0.18);
+  border-bottom: 1px solid rgba(0, 191, 255, 0.18);
+  transform: translateX(-50%) rotate(45deg);
+}
+
+.link-icon:hover .tooltip,
+.link-icon:focus-visible .tooltip {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
 }
 
 .project-desc {
@@ -425,6 +628,11 @@ onMounted(async () => {
 
   .project-header {
     flex-direction: column;
+  }
+
+  .project-links {
+    width: 100%;
+    justify-content: flex-start;
   }
 }
 </style>

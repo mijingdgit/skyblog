@@ -3,7 +3,22 @@ from typing import Optional
 from django.utils.text import slugify
 from rest_framework import serializers
 
-from .models import Project
+from .models import Project, ProjectPageContent
+
+
+class ProjectPageContentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProjectPageContent
+        fields = [
+            'id',
+            'title_prefix',
+            'title_accent',
+            'description',
+            'filters',
+            'is_active',
+            'created_at',
+            'updated_at',
+        ]
 
 
 class ProjectSerializer(serializers.ModelSerializer):

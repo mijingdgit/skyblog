@@ -1,105 +1,166 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
+import { fetchAboutProfile } from '../api/public'
+import type { AboutProfile } from '../types/admin'
+import { applySeo } from '../utils/seo'
 
-// 个人简介
-const profile = {
+const defaultProfile: AboutProfile = {
+  id: 0,
   name: 'Sky',
-  title: 'Python 开发者 & AI 应用工程师',
+  title: 'Python 开发者 & AI 应用实践者',
   location: '中国',
   email: 'hello@example.com',
   github: 'https://github.com',
-  slogan: '用代码改变世界，让 AI 创造未来'
+  slogan: '用代码记录学习，用 AI 扩展创造。',
+  avatar_text: 'S',
+  page_title: '关于我',
+  page_description: '探索我的技术旅程和成长轨迹',
+  intro_title: '你好，我是 Sky',
+  intro_paragraphs: [
+    '一名专注于 Python 开发和 AI 应用落地的全栈开发者，喜欢把新技术拆解成可以被实际项目使用的能力。',
+    '我的学习路线从 Python、Django、Vue 开始，逐步延伸到大模型应用、知识库问答、自动化工作流和内容生产工具。',
+    '这个博客会记录技术学习、项目实践和踩坑经验，也会持续整理 AI 工具链在真实场景中的使用方式。',
+  ],
+  skills: [
+    { category: 'Python 核心', items: ['异步编程', 'Django', 'FastAPI', '自动化脚本'] },
+    { category: '前端技术', items: ['Vue3', 'TypeScript', 'Vite', 'CSS3'] },
+    { category: 'AI 应用', items: ['RAG', 'Agent', 'Prompt 工程', 'XMind 知识整理'] },
+  ],
+  directions: [
+    { icon: 'AI', title: '大模型应用开发', desc: '关注 LLM 在知识库、自动化办公和学习系统中的落地。' },
+    { icon: 'Py', title: 'Python 全栈开发', desc: '使用 Django、FastAPI 和 Vue 构建稳定、可维护的 Web 应用。' },
+    { icon: 'Ops', title: '部署与工程化', desc: '整理项目上线、媒体资源和持续迭代中的实践。' },
+  ],
+  experiences: [
+    {
+      period: '2026 - 至今',
+      title: 'SkyBlog 个人技术站',
+      company: '个人项目',
+      description: '基于 Vue3 与 Django 搭建内容发布系统，支持文章、项目、Markdown、XMind 和后台管理。',
+    },
+  ],
+  certifications: ['持续学习 Python / Django / Vue3', 'AI 大模型应用实践', '个人技术博客建设'],
+  tools: [
+    { icon: 'Code', name: 'VS Code' },
+    { icon: 'Git', name: 'Git' },
+    { icon: 'API', name: 'Postman' },
+    { icon: 'Docker', name: 'Docker' },
+  ],
+  abilities: [
+    { icon: 'API', title: '后端接口开发', desc: '使用 Django/FastAPI 构建内容管理和业务 API。' },
+    { icon: 'Web', title: '前端页面实现', desc: '使用 Vue3 和 TypeScript 完成响应式交互页面。' },
+    { icon: 'AI', title: 'AI 内容工具', desc: '将 Markdown、XMind、Word 等学习资料接入内容展示流程。' },
+  ],
+  contact_title: '一起交流技术与 AI 实践',
+  contact_description: '如果你对 Python、Django、Vue 或 AI 应用开发感兴趣，欢迎随时联系我交流。',
+  is_active: true,
+  created_at: '',
+  updated_at: '',
 }
 
-// 技术技能
-const skills = {
-  'Python 核心': ['异步编程', '装饰器', '生成器', '元编程'],
-  'Web 框架': ['FastAPI', 'Django', 'Flask', 'Tornado'],
-  'AI/ML': ['LangChain', 'OpenAI API', 'Claude API', 'RAG', 'Vector DB'],
-  'AI 绘画': ['Stable Diffusion', 'ComfyUI', 'LoRA', 'ControlNet'],
-  '前端技术': ['Vue3', 'TypeScript', 'Three.js', 'Element Plus'],
-  'DevOps': ['Docker', 'Linux', 'Nginx', 'Git']
-}
-
-// 项目经验
-const experiences = [
-  {
-    period: '2024 - 至今',
-    title: 'AI 应用开发工程师',
-    company: '某科技公司',
-    description: '负责企业级 AI 知识库问答系统开发，基于 RAG 架构实现私有文档智能问答'
-  },
-  {
-    period: '2022 - 2024',
-    title: 'Python 后端开发',
-    company: '某互联网公司',
-    description: '负责 RESTful API 开发，高并发服务架构设计，微服务化改造'
-  },
-  {
-    period: '2020 - 2022',
-    title: '全栈开发工程师',
-    company: '某创业公司',
-    description: '从 0 到 1 构建多个 Web 项目，包括电商平台、数据可视化后台'
-  }
-]
-
-// 发展方向
-const directions = [
-  {
-    icon: '🧠',
-    title: '大模型应用开发',
-    desc: '专注于 LLM 应用落地，包括 RAG、Agent、Prompt 工程等'
-  },
-  {
-    icon: '🎨',
-    title: 'AI 动漫生成',
-    desc: '探索 Stable Diffusion、ComfyUI 工作流自动化、AI 视频生成等'
-  },
-  {
-    icon: '⚡',
-    title: '高性能 Python',
-    desc: '深入异步编程、性能优化、高并发架构设计'
-  }
-]
-
-// 认证证书
-const certifications = [
-  'AWS Certified Solutions Architect',
-  '阿里云 ACE 认证',
-  'Python Institute PCAP',
-  'DeepLearning.AI TensorFlow 开发者证书'
-]
-
+const profile = ref<AboutProfile>(defaultProfile)
 const activeTab = ref('profile')
+const isLoading = ref(true)
+const loadError = ref('')
 
 const tabs = [
   { key: 'profile', label: '个人简介' },
-  { key: 'skills', label: '技能栈' },
-  { key: 'experience', label: '项目经验' },
-  { key: 'contact', label: '联系方式' }
+  { key: 'skills', label: '技能栏' },
+  { key: 'experience', label: '项目经历' },
+  { key: 'contact', label: '联系方式' },
 ]
+
+const githubName = computed(() => {
+  if (!profile.value.github) return '未填写'
+
+  try {
+    const url = new URL(profile.value.github)
+    return url.pathname.replace(/^\/|\/$/g, '') || url.hostname
+  } catch {
+    return profile.value.github
+  }
+})
+
+const pageTitlePrefix = computed(() => {
+  const title = profile.value.page_title || '关于我'
+  if (title.includes(profile.value.name)) {
+    return title.replace(profile.value.name, '')
+  }
+  if (title.endsWith('我')) {
+    return title.slice(0, -1)
+  }
+  return title
+})
+
+const pageTitleAccent = computed(() => {
+  const title = profile.value.page_title || '关于我'
+  if (title.includes(profile.value.name)) {
+    return profile.value.name
+  }
+  if (title.endsWith('我')) {
+    return '我'
+  }
+  return ''
+})
+
+function mergeWithDefaults(data: AboutProfile): AboutProfile {
+  return {
+    ...defaultProfile,
+    ...data,
+    intro_paragraphs: Array.isArray(data.intro_paragraphs) ? data.intro_paragraphs : defaultProfile.intro_paragraphs,
+    skills: Array.isArray(data.skills) ? data.skills : defaultProfile.skills,
+    directions: Array.isArray(data.directions) ? data.directions : defaultProfile.directions,
+    experiences: Array.isArray(data.experiences) ? data.experiences : defaultProfile.experiences,
+    certifications: Array.isArray(data.certifications) ? data.certifications : defaultProfile.certifications,
+    tools: Array.isArray(data.tools) ? data.tools : defaultProfile.tools,
+    abilities: Array.isArray(data.abilities) ? data.abilities : defaultProfile.abilities,
+  }
+}
+
+onMounted(async () => {
+  try {
+    profile.value = mergeWithDefaults(await fetchAboutProfile())
+    applySeo({
+      title: profile.value.page_title || '关于我',
+      description: profile.value.page_description || profile.value.slogan,
+      path: '/about',
+    })
+  } catch {
+    loadError.value = '关于资料加载失败，当前显示本地默认内容。'
+  } finally {
+    isLoading.value = false
+  }
+})
 </script>
 
 <template>
   <div class="about-page">
-    <!-- Header -->
     <section class="page-header">
       <div class="container">
-        <h1 class="page-title">关于<span class="accent">我</span></h1>
-        <p class="page-desc">探索我的技术旅程和成长轨迹</p>
+        <h1 class="page-title">
+          {{ pageTitlePrefix }}<span v-if="pageTitleAccent" class="accent">{{ pageTitleAccent }}</span>
+        </h1>
+        <p class="page-desc">{{ profile.page_description }}</p>
+      </div>
+    </section>
+
+    <section v-if="isLoading || loadError" class="status-section">
+      <div class="container">
+        <div class="status-card" :class="{ error: loadError }">
+          {{ isLoading ? '正在读取后台关于资料...' : loadError }}
+        </div>
       </div>
     </section>
 
     <div class="container">
       <div class="about-layout">
-        <!-- Sidebar -->
         <aside class="about-sidebar">
           <div class="avatar-section">
             <div class="avatar-wrapper">
               <div class="avatar-ring"></div>
               <div class="avatar-ring ring-2"></div>
               <div class="avatar">
-                <span>◈</span>
+                <span>{{ profile.avatar_text || profile.name.slice(0, 1) }}</span>
               </div>
             </div>
             <h2 class="name">{{ profile.name }}</h2>
@@ -120,53 +181,41 @@ const tabs = [
           </nav>
         </aside>
 
-        <!-- Main Content -->
         <main class="about-content">
-          <!-- Profile Tab -->
           <section v-if="activeTab === 'profile'" class="content-section">
-            <h2 class="section-title">你好，我是 {{ profile.name }} 👋</h2>
+            <h2 class="section-title">{{ profile.intro_title }}</h2>
 
             <div class="intro-text">
-              <p>
-                一名专注于 <strong>Python 开发</strong> 和 <strong>AI 应用</strong> 的全栈工程师。
-                我热爱开源技术，擅长将前沿 AI 能力落地到实际业务场景中。
-              </p>
-              <p>
-                我的技术旅程始于大学时期对 Python 的热爱，从简单的脚本到复杂的 Web 应用，
-                再到如今日火如荼的大模型应用，我始终保持着对新技术的渴望和学习热情。
-              </p>
-              <p>
-                在这个博客中，我会分享我在 AI 应用开发、Python 进阶、动漫生成等技术领域的学习心得和实践经验。
-                希望能够与志同道合的朋友们一起交流进步！
+              <p v-for="paragraph in profile.intro_paragraphs" :key="paragraph">
+                {{ paragraph }}
               </p>
             </div>
 
             <h3 class="subsection-title">我的方向</h3>
             <div class="directions-grid">
-              <div v-for="dir in directions" :key="dir.title" class="direction-card">
-                <span class="dir-icon">{{ dir.icon }}</span>
-                <h4>{{ dir.title }}</h4>
-                <p>{{ dir.desc }}</p>
+              <div v-for="direction in profile.directions" :key="direction.title" class="direction-card">
+                <span class="dir-icon">{{ direction.icon }}</span>
+                <h4>{{ direction.title }}</h4>
+                <p>{{ direction.desc }}</p>
               </div>
             </div>
 
-            <h3 class="subsection-title">认证证书</h3>
+            <h3 class="subsection-title">证书 / 学习记录</h3>
             <div class="cert-list">
-              <span v-for="cert in certifications" :key="cert" class="cert-item">
-                🏆 {{ cert }}
+              <span v-for="cert in profile.certifications" :key="cert" class="cert-item">
+                {{ cert }}
               </span>
             </div>
           </section>
 
-          <!-- Skills Tab -->
           <section v-if="activeTab === 'skills'" class="content-section">
-            <h2 class="section-title">技能栈</h2>
+            <h2 class="section-title">技能栏</h2>
 
             <div class="skills-grid">
-              <div v-for="(skillsList, category) in skills" :key="category" class="skill-category">
-                <h3 class="category-title">{{ category }}</h3>
+              <div v-for="group in profile.skills" :key="group.category" class="skill-category">
+                <h3 class="category-title">{{ group.category }}</h3>
                 <div class="skill-tags">
-                  <span v-for="skill in skillsList" :key="skill" class="skill-tag">
+                  <span v-for="skill in group.items" :key="skill" class="skill-tag">
                     {{ skill }}
                   </span>
                 </div>
@@ -175,109 +224,66 @@ const tabs = [
 
             <h3 class="subsection-title">工具与环境</h3>
             <div class="tools-grid">
-              <div class="tool-item">
-                <span class="tool-icon">🐳</span>
-                <span>Docker</span>
-              </div>
-              <div class="tool-item">
-                <span class="tool-icon">🐧</span>
-                <span>Linux</span>
-              </div>
-              <div class="tool-item">
-                <span class="tool-icon">📝</span>
-                <span>Git</span>
-              </div>
-              <div class="tool-item">
-                <span class="tool-icon">💻</span>
-                <span>VS Code</span>
-              </div>
-              <div class="tool-item">
-                <span class="tool-icon">🔥</span>
-                <span>Postman</span>
-              </div>
-              <div class="tool-item">
-                <span class="tool-icon">📊</span>
-                <span>Prometheus</span>
+              <div v-for="tool in profile.tools" :key="tool.name" class="tool-item">
+                <span class="tool-icon">{{ tool.icon }}</span>
+                <span>{{ tool.name }}</span>
               </div>
             </div>
           </section>
 
-          <!-- Experience Tab -->
           <section v-if="activeTab === 'experience'" class="content-section">
-            <h2 class="section-title">项目经验</h2>
+            <h2 class="section-title">项目经历</h2>
 
             <div class="timeline">
-              <div v-for="exp in experiences" :key="exp.title" class="timeline-item">
+              <div v-for="experience in profile.experiences" :key="experience.title" class="timeline-item">
                 <div class="timeline-marker"></div>
                 <div class="timeline-content">
-                  <span class="period">{{ exp.period }}</span>
-                  <h3 class="exp-title">{{ exp.title }}</h3>
-                  <span class="company">{{ exp.company }}</span>
-                  <p class="exp-desc">{{ exp.description }}</p>
+                  <span class="period">{{ experience.period }}</span>
+                  <h3 class="exp-title">{{ experience.title }}</h3>
+                  <span class="company">{{ experience.company }}</span>
+                  <p class="exp-desc">{{ experience.description }}</p>
                 </div>
               </div>
             </div>
 
             <h3 class="subsection-title">核心能力</h3>
             <div class="abilities-grid">
-              <div class="ability-item">
-                <span class="ability-icon">🚀</span>
+              <div v-for="ability in profile.abilities" :key="ability.title" class="ability-item">
+                <span class="ability-icon">{{ ability.icon }}</span>
                 <div>
-                  <h4>高性能服务开发</h4>
-                  <p>熟练使用 FastAPI/Django 构建高并发 API 服务</p>
-                </div>
-              </div>
-              <div class="ability-item">
-                <span class="ability-icon">🤖</span>
-                <div>
-                  <h4>AI 应用开发</h4>
-                  <p>RAG 知识库、智能对话、Agent 架构设计</p>
-                </div>
-              </div>
-              <div class="ability-item">
-                <span class="ability-icon">🎨</span>
-                <div>
-                  <h4>AI 图像生成</h4>
-                  <p>SD/ComfyUI 工作流定制、LoRA 训练</p>
-                </div>
-              </div>
-              <div class="ability-item">
-                <span class="ability-icon">⚙️</span>
-                <div>
-                  <h4>DevOps</h4>
-                  <p>Docker 容器化、CI/CD 流程、自动化部署</p>
+                  <h4>{{ ability.title }}</h4>
+                  <p>{{ ability.desc }}</p>
                 </div>
               </div>
             </div>
           </section>
 
-          <!-- Contact Tab -->
           <section v-if="activeTab === 'contact'" class="content-section">
             <h2 class="section-title">联系方式</h2>
 
             <div class="contact-grid">
               <a :href="`mailto:${profile.email}`" class="contact-card">
-                <span class="contact-icon">📧</span>
+                <span class="contact-icon">Mail</span>
                 <span class="contact-label">邮箱</span>
-                <span class="contact-value">{{ profile.email }}</span>
+                <span class="contact-value">{{ profile.email || '未填写' }}</span>
               </a>
-              <a :href="profile.github" target="_blank" class="contact-card">
-                <span class="contact-icon">⌘</span>
+              <a :href="profile.github" target="_blank" rel="noreferrer" class="contact-card">
+                <span class="contact-icon">GitHub</span>
                 <span class="contact-label">GitHub</span>
-                <span class="contact-value">@yourname</span>
+                <span class="contact-value">{{ githubName }}</span>
               </a>
               <div class="contact-card">
-                <span class="contact-icon">📍</span>
+                <span class="contact-icon">Map</span>
                 <span class="contact-label">位置</span>
-                <span class="contact-value">{{ profile.location }}</span>
+                <span class="contact-value">{{ profile.location || '未填写' }}</span>
               </div>
             </div>
 
             <div class="cta-section">
-              <h3>让我们一起探索 AI 的无限可能！</h3>
-              <p>如果你对 AI 应用开发、Python 技术或者动漫生成感兴趣，欢迎随时联系我交流探讨。</p>
+              <h3>{{ profile.contact_title }}</h3>
+              <p>{{ profile.contact_description }}</p>
               <a :href="`mailto:${profile.email}`" class="cta-btn">
-                联系我 →
+                联系我 ->
               </a>
             </div>
           </section>
@@ -298,7 +304,6 @@ const tabs = [
   padding: 0 24px;
 }
 
-/* Header */
 .page-header {
   padding: 120px 0 60px;
   text-align: center;
@@ -320,14 +325,29 @@ const tabs = [
   color: rgba(255, 255, 255, 0.6);
 }
 
-/* Layout */
+.status-section {
+  margin-bottom: 32px;
+}
+
+.status-card {
+  padding: 16px 18px;
+  border: 1px solid rgba(0, 191, 255, 0.15);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.74);
+}
+
+.status-card.error {
+  border-color: rgba(255, 113, 103, 0.28);
+  color: #ff9b94;
+}
+
 .about-layout {
   display: grid;
   grid-template-columns: 280px 1fr;
   gap: 50px;
 }
 
-/* Sidebar */
 .about-sidebar {
   position: sticky;
   top: 100px;
@@ -435,7 +455,6 @@ const tabs = [
   color: #00ffff;
 }
 
-/* Content */
 .content-section {
   animation: fadeIn 0.3s ease;
 }
@@ -459,15 +478,10 @@ const tabs = [
   border-bottom: 1px solid rgba(0, 191, 255, 0.15);
 }
 
-/* Profile */
 .intro-text p {
   color: rgba(255, 255, 255, 0.75);
   line-height: 1.9;
   margin-bottom: 20px;
-}
-
-.intro-text strong {
-  color: #00ffff;
 }
 
 .directions-grid {
@@ -490,9 +504,18 @@ const tabs = [
 }
 
 .dir-icon {
-  font-size: 2rem;
-  display: block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 42px;
+  height: 42px;
+  padding: 0 10px;
   margin-bottom: 12px;
+  border-radius: 14px;
+  background: rgba(0, 191, 255, 0.1);
+  color: #00ffff;
+  font-size: 0.9rem;
+  font-weight: 700;
 }
 
 .direction-card h4 {
@@ -522,7 +545,6 @@ const tabs = [
   color: rgba(255, 255, 255, 0.7);
 }
 
-/* Skills */
 .skills-grid {
   display: grid;
   gap: 24px;
@@ -572,11 +594,12 @@ const tabs = [
   color: rgba(255, 255, 255, 0.7);
 }
 
-.tool-icon {
-  font-size: 1.2rem;
+.tool-icon,
+.ability-icon {
+  color: #00bfff;
+  font-weight: 700;
 }
 
-/* Experience */
 .timeline {
   position: relative;
   padding-left: 30px;
@@ -655,10 +678,6 @@ const tabs = [
   border-radius: 12px;
 }
 
-.ability-icon {
-  font-size: 1.8rem;
-}
-
 .ability-item h4 {
   font-size: 1rem;
   color: #fff;
@@ -670,7 +689,6 @@ const tabs = [
   color: rgba(255, 255, 255, 0.5);
 }
 
-/* Contact */
 .contact-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -697,7 +715,8 @@ const tabs = [
 }
 
 .contact-icon {
-  font-size: 2rem;
+  color: #00bfff;
+  font-weight: 700;
   margin-bottom: 12px;
 }
 
@@ -746,7 +765,6 @@ const tabs = [
   box-shadow: 0 6px 20px rgba(0, 191, 255, 0.4);
 }
 
-/* Responsive */
 @media (max-width: 900px) {
   .about-layout {
     grid-template-columns: 1fr;
@@ -768,10 +786,7 @@ const tabs = [
     font-size: 1.8rem;
   }
 
-  .directions-grid {
-    grid-template-columns: 1fr;
-  }
-
+  .directions-grid,
   .contact-grid {
     grid-template-columns: 1fr;
   }

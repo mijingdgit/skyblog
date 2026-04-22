@@ -1,14 +1,83 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
+from django.conf import settings
+from django.http import HttpResponse, JsonResponse
 from django.middleware.csrf import get_token
 from django.views.decorators.csrf import csrf_exempt
 from django.core.paginator import Paginator
+from xml.sax.saxutils import escape
 from users.models import User
 from articles.models import Article, Category
 from projects.models import Project
 import json
+
+
+def frontend_url(path: str = "") -> str:
+    normalized_path = path if path.startswith("/") else f"/{path}"
+    return f"{settings.SITE_URL}{normalized_path}"
+
+
+def robots_txt(request):
+    """Expose crawl rules and the dynamic sitemap location."""
+    body = "\n".join(
+        [
+            "User-agent: *",
+            "Allow: /",
+            "Disallow: /admin/",
+            "Disallow: /api/",
+            f"Sitemap: {frontend_url('/sitemap.xml')}",
+            "",
+        ]
+    )
+    return HttpResponse(body, content_type="text/plain; charset=utf-8")
+
+
+def sitemap_xml(request):
+    """Generate a sitemap for public SPA routes and published content."""
+    urls = [
+        {"loc": frontend_url("/"), "priority": "1.0", "changefreq": "daily"},
+        {"loc": frontend_url("/articles"), "priority": "0.9", "changefreq": "daily"},
+        {"loc": frontend_url("/projects"), "priority": "0.8", "changefreq": "weekly"},
+        {"loc": frontend_url("/about"), "priority": "0.6", "changefreq": "monthly"},
+    ]
+
+    for category in Category.objects.filter(articles__is_published=True).distinct():
+        urls.append(
+            {
+                "loc": frontend_url(f"/category/{category.slug}"),
+                "priority": "0.7",
+                "changefreq": "weekly",
+            }
+        )
+
+    for article in Article.objects.filter(is_published=True).order_by("-updated_at"):
+        urls.append(
+            {
+                "loc": frontend_url(f"/article/{article.id}"),
+                "lastmod": article.updated_at.date().isoformat(),
+                "priority": "0.8",
+                "changefreq": "weekly",
+            }
+        )
+
+    latest_project = Project.objects.filter(is_published=True).order_by("-updated_at").first()
+    if latest_project:
+        urls[2]["lastmod"] = latest_project.updated_at.date().isoformat()
+
+    lines = ['<?xml version="1.0" encoding="UTF-8"?>']
+    lines.append('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">')
+    for item in urls:
+        lines.append("  <url>")
+        lines.append(f"    <loc>{escape(item['loc'])}</loc>")
+        if item.get("lastmod"):
+            lines.append(f"    <lastmod>{item['lastmod']}</lastmod>")
+        lines.append(f"    <changefreq>{item['changefreq']}</changefreq>")
+        lines.append(f"    <priority>{item['priority']}</priority>")
+        lines.append("  </url>")
+    lines.append("</urlset>")
+
+    return HttpResponse("\n".join(lines), content_type="application/xml; charset=utf-8")
 
 
 def api_csrf(request):

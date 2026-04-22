@@ -1,0 +1,4 @@
+# Run SkyBlog backup every day at 03:30 and keep the latest 14 archives.
+# Copy this line into the server user's crontab with: crontab -e
+
+30 3 * * * cd /var/www/skyblog && /usr/bin/python3 deploy/backup_skyblog.py --backend-dir /var/www/skyblog/skyblogBackstage --output-dir /var/backups/skyblog --keep 14 >> /var/log/skyblog-backup.log 2>&1

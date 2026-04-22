@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
-import { fetchPublicCategories, fetchPublishedArticles } from '../api/public'
-import type { AdminArticle, AdminCategory } from '../types/admin'
+import { fetchPublicCategories, fetchPublicTags, fetchPublishedArticles } from '../api/public'
+import type { AdminArticle, AdminCategory, AdminTag } from '../types/admin'
 import {
   buildTagCounts,
   categoryById,
@@ -18,13 +18,26 @@ const router = useRouter()
 
 const categories = ref<AdminCategory[]>([])
 const articles = ref<AdminArticle[]>([])
+const tags = ref<AdminTag[]>([])
 const activeCategory = ref('all')
 const activeTag = ref('')
+const searchKeyword = ref('')
 const sortBy = ref<'date' | 'views'>('date')
 const isLoading = ref(true)
 const loadError = ref('')
 
-const tagCounts = computed(() => buildTagCounts(articles.value))
+const tagCounts = computed(() => {
+  if (tags.value.length === 0) {
+    return buildTagCounts(articles.value)
+  }
+
+  return tags.value
+    .map((tag) => ({
+      name: tag.name,
+      count: tag.article_count ?? 0,
+    }))
+    .sort((left, right) => right.count - left.count)
+})
 
 const filteredArticles = computed(() => {
   let result = [...articles.value]
@@ -38,6 +51,24 @@ const filteredArticles = computed(() => {
     result = result.filter((article) => article.tags.some((tag) => tag.name === activeTag.value))
   }
 
+  const keyword = searchKeyword.value.trim().toLowerCase()
+  if (keyword) {
+    result = result.filter((article) => {
+      const categoryName = categoryById(categories.value, article.category)?.name || article.category_name || ''
+      const searchableText = [
+        article.title,
+        article.excerpt,
+        article.content,
+        categoryName,
+        ...article.tags.map((tag) => tag.name),
+      ]
+        .join(' ')
+        .toLowerCase()
+
+      return searchableText.includes(keyword)
+    })
+  }
+
   return sortBy.value === 'views' ? sortArticlesByViews(result) : sortArticlesByLatest(result)
 })
 
@@ -49,10 +80,12 @@ function estimateReadTime(content: string) {
 function syncFiltersFromRoute() {
   const category = typeof route.query.category === 'string' ? route.query.category : 'all'
   const tag = typeof route.query.tag === 'string' ? route.query.tag : ''
+  const search = typeof route.query.search === 'string' ? route.query.search : ''
   const sort = route.query.sort === 'views' ? 'views' : 'date'
 
   activeCategory.value = category
   activeTag.value = tag
+  searchKeyword.value = search
   sortBy.value = sort
 }
 
@@ -65,6 +98,10 @@ function syncRouteFromFilters() {
 
   if (activeTag.value) {
     nextQuery.tag = activeTag.value
+  }
+
+  if (searchKeyword.value.trim()) {
+    nextQuery.search = searchKeyword.value.trim()
   }
 
   if (sortBy.value !== 'date') {
@@ -88,6 +125,7 @@ function toggleTag(tag: string) {
 function clearFilters() {
   activeCategory.value = 'all'
   activeTag.value = ''
+  searchKeyword.value = ''
   sortBy.value = 'date'
 }
 
@@ -99,18 +137,20 @@ watch(
   { immediate: true },
 )
 
-watch([activeCategory, activeTag, sortBy], () => {
+watch([activeCategory, activeTag, searchKeyword, sortBy], () => {
   syncRouteFromFilters()
 })
 
 onMounted(async () => {
   try {
-    const [categoryData, articleData] = await Promise.all([
+    const [categoryData, tagData, articleData] = await Promise.all([
       fetchPublicCategories(),
+      fetchPublicTags(),
       fetchPublishedArticles(),
     ])
 
     categories.value = categoryData
+    tags.value = tagData
     articles.value = articleData
   } catch {
     loadError.value = '文章内容加载失败，请确认 Django API 已启动。'
@@ -150,7 +190,9 @@ onMounted(async () => {
                 :class="{ active: activeCategory === category.slug }"
                 @click="setCategory(category.slug)"
               >
-                <span class="cat-icon">{{ category.icon || category.name.slice(0, 1) }}</span>
+                <span class="cat-icon" :title="category.icon || category.name.slice(0, 1)">
+                  {{ category.icon || category.name.slice(0, 1) }}
+                </span>
                 <span class="cat-name">{{ category.name }}</span>
                 <span class="cat-count">{{ category.article_count }}</span>
               </button>
@@ -204,7 +246,20 @@ onMounted(async () => {
           </div>
 
           <template v-else>
-            <div v-if="activeCategory !== 'all' || activeTag" class="active-filters">
+            <div class="search-panel">
+              <label class="search-label" for="article-search">搜索文章</label>
+              <div class="search-box">
+                <input
+                  id="article-search"
+                  v-model="searchKeyword"
+                  type="search"
+                  placeholder="输入标题、标签、分类或正文关键词"
+                />
+                <button v-if="searchKeyword" type="button" @click="searchKeyword = ''">清除</button>
+              </div>
+            </div>
+
+            <div v-if="activeCategory !== 'all' || activeTag || searchKeyword" class="active-filters">
               <span class="filter-label">当前筛选</span>
               <span v-if="activeCategory !== 'all'" class="filter-tag">
                 {{ categoryBySlug(categories, activeCategory)?.name || activeCategory }}
@@ -213,6 +268,10 @@ onMounted(async () => {
               <span v-if="activeTag" class="filter-tag">
                 {{ activeTag }}
                 <button @click="activeTag = ''">×</button>
+              </span>
+              <span v-if="searchKeyword" class="filter-tag">
+                {{ searchKeyword }}
+                <button @click="searchKeyword = ''">×</button>
               </span>
               <button class="clear-btn" @click="clearFilters">清除筛选</button>
             </div>
@@ -362,6 +421,26 @@ onMounted(async () => {
   flex: 1;
 }
 
+.cat-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 28px;
+  width: 28px;
+  height: 28px;
+  box-sizing: border-box;
+  padding: 0 4px;
+  border-radius: 9px;
+  background: rgba(0, 191, 255, 0.1);
+  color: #c9a7ff;
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .cat-count {
   font-size: 0.8rem;
   color: rgba(255, 255, 255, 0.4);
@@ -405,6 +484,50 @@ onMounted(async () => {
 
 .main-content {
   min-height: 60vh;
+}
+
+.search-panel {
+  margin-bottom: 20px;
+  padding: 18px 20px;
+  border: 1px solid rgba(0, 191, 255, 0.12);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.search-label {
+  display: block;
+  margin-bottom: 10px;
+  color: rgba(255, 255, 255, 0.52);
+  font-size: 0.9rem;
+}
+
+.search-box {
+  display: flex;
+  gap: 10px;
+}
+
+.search-box input {
+  flex: 1;
+  min-width: 0;
+  padding: 12px 14px;
+  border: 1px solid rgba(0, 191, 255, 0.18);
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.18);
+  color: #fff;
+  outline: none;
+}
+
+.search-box input:focus {
+  border-color: rgba(0, 255, 255, 0.5);
+}
+
+.search-box button {
+  padding: 0 16px;
+  border: 1px solid rgba(0, 191, 255, 0.24);
+  border-radius: 12px;
+  background: rgba(0, 191, 255, 0.1);
+  color: #00ffff;
+  cursor: pointer;
 }
 
 .status-card {

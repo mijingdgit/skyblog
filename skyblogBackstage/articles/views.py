@@ -1,11 +1,11 @@
 from django.db import models
-from rest_framework import viewsets
+from rest_framework import views, viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.permissions import AllowAny, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 
-from .models import Article, Category, Tag
-from .serializers import ArticleSerializer, CategorySerializer, TagSerializer
+from .models import AboutProfile, Article, Category, Tag
+from .serializers import AboutProfileSerializer, ArticleSerializer, CategorySerializer, TagSerializer
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
@@ -87,3 +87,26 @@ class ArticleViewSet(viewsets.ModelViewSet):
         article.save(update_fields=['is_featured'])
         state = 'featured' if article.is_featured else 'not featured'
         return Response({'code': 200, 'message': f'Article marked as {state}'})
+
+    @action(detail=True, methods=['post'], permission_classes=[AllowAny])
+    def increment_view(self, request, pk=None):
+        article = self.get_object()
+        Article.objects.filter(pk=article.pk).update(views=models.F('views') + 1)
+        article.refresh_from_db(fields=['views'])
+        return Response({'views': article.views})
+
+
+class AboutProfileView(views.APIView):
+    """Public singleton endpoint for the about page."""
+
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        profile = (
+            AboutProfile.objects.filter(is_active=True).order_by('-updated_at').first()
+            or AboutProfile.objects.order_by('-updated_at').first()
+        )
+        if profile is None:
+            profile = AboutProfile.objects.create()
+
+        return Response(AboutProfileSerializer(profile).data)

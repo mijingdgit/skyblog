@@ -3,13 +3,18 @@ from typing import Optional
 from django.utils.text import slugify
 from rest_framework import serializers
 
-from .models import Article, Category, Tag
+from .models import AboutProfile, Article, Category, Tag
 
 
 class TagSerializer(serializers.ModelSerializer):
+    article_count = serializers.SerializerMethodField()
+
     class Meta:
         model = Tag
-        fields = ['id', 'name', 'created_at']
+        fields = ['id', 'name', 'article_count', 'created_at']
+
+    def get_article_count(self, obj):
+        return obj.articles.filter(is_published=True).count()
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -32,7 +37,7 @@ class ArticleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Article
         fields = [
-            'id', 'title', 'slug', 'excerpt', 'content', 'category', 'category_name',
+            'id', 'title', 'slug', 'excerpt', 'content', 'xmind_file', 'category', 'category_name',
             'tags', 'tag_ids', 'author', 'author_name', 'cover', 'views',
             'is_published', 'is_featured', 'created_at', 'updated_at', 'published_at'
         ]
@@ -80,3 +85,33 @@ class ArticleSerializer(serializers.ModelSerializer):
         if tag_ids is not None:
             instance.tags.set(tag_ids)
         return instance
+
+
+class AboutProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AboutProfile
+        fields = [
+            'id',
+            'name',
+            'title',
+            'location',
+            'email',
+            'github',
+            'slogan',
+            'avatar_text',
+            'page_title',
+            'page_description',
+            'intro_title',
+            'intro_paragraphs',
+            'skills',
+            'directions',
+            'experiences',
+            'certifications',
+            'tools',
+            'abilities',
+            'contact_title',
+            'contact_description',
+            'is_active',
+            'created_at',
+            'updated_at',
+        ]

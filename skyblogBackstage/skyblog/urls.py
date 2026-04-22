@@ -12,6 +12,8 @@ admin.site.site_title = 'SkyBlog Admin'
 admin.site.index_title = '内容管理中心'
 
 urlpatterns = [
+    path('robots.txt', views.robots_txt, name='robots-txt'),
+    path('sitemap.xml', views.sitemap_xml, name='sitemap-xml'),
     path('admin/', admin.site.urls),
     path('admin/login/', views.login_view, name='login'),
     path('admin/logout/', views.logout_view, name='logout'),

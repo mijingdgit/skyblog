@@ -80,7 +80,9 @@ watch(
           </div>
 
           <div class="category-header">
-            <span class="category-icon">{{ category.icon || category.name.slice(0, 1) }}</span>
+            <span class="category-icon" :title="category.icon || category.name.slice(0, 1)">
+              {{ category.icon || category.name.slice(0, 1) }}
+            </span>
             <div class="category-info">
               <h1 class="category-name">{{ category.name }}</h1>
               <p class="category-desc">{{ category.description || '这里会展示该分类下的已发布文章。' }}</p>
@@ -222,7 +224,24 @@ watch(
 }
 
 .category-icon {
-  font-size: 4rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 88px;
+  width: 88px;
+  height: 88px;
+  box-sizing: border-box;
+  padding: 0 12px;
+  border-radius: 24px;
+  background: rgba(0, 191, 255, 0.12);
+  color: #c9a7ff;
+  font-size: 1.7rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .category-name {
@@ -389,7 +408,11 @@ watch(
   }
 
   .category-icon {
-    font-size: 3rem;
+    flex-basis: 68px;
+    width: 68px;
+    height: 68px;
+    border-radius: 20px;
+    font-size: 1.35rem;
   }
 
   .category-name {

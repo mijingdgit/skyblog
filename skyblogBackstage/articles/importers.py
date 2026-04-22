@@ -23,6 +23,7 @@ except ImportError:  # pragma: no cover
 SUPPORTED_IMPORT_SUFFIXES = {".md", ".markdown", ".xmind", ".docx", ".doc"}
 MARKDOWN_IMAGE_PATTERN = re.compile(r"!\[([^\]]*)\]\(([\s\S]*?)\)")
 HTML_IMAGE_PATTERN = re.compile(r'(<img\b[^>]*?\bsrc=["\'])([^"\']+)(["\'][^>]*>)', re.IGNORECASE)
+XMIND_SOURCE_MARKER = "<!-- source:xmind -->"
 
 
 def extract_content_from_upload(uploaded) -> str:
@@ -53,6 +54,8 @@ def infer_title(content: str, filename: str) -> str:
         stripped = line.strip()
         if not stripped:
             continue
+        if stripped == XMIND_SOURCE_MARKER:
+            continue
         if stripped.startswith("#"):
             return stripped.lstrip("#").strip() or Path(filename).stem
         if len(stripped) <= 80:
@@ -67,6 +70,8 @@ def infer_excerpt(content: str) -> str:
     for line in content.splitlines():
         stripped = line.strip()
         if not stripped:
+            continue
+        if stripped == XMIND_SOURCE_MARKER:
             continue
         if stripped.startswith("#") or stripped.startswith("```") or stripped.startswith("!"):
             continue
@@ -93,11 +98,11 @@ def _extract_xmind_content(payload: bytes) -> str:
         with zipfile.ZipFile(BytesIO(payload)) as archive:
             if "content.json" in archive.namelist():
                 data = json.loads(archive.read("content.json").decode("utf-8"))
-                return _xmind_json_to_markdown(data)
+                return f"{XMIND_SOURCE_MARKER}\n\n{_xmind_json_to_markdown(data)}"
 
             if "content.xml" in archive.namelist():
                 xml_payload = archive.read("content.xml")
-                return _xmind_xml_to_markdown(xml_payload)
+                return f"{XMIND_SOURCE_MARKER}\n\n{_xmind_xml_to_markdown(xml_payload)}"
     except zipfile.BadZipFile as exc:
         raise forms.ValidationError("XMind 文件无法识别，请确认上传的是有效的 .xmind 文件。") from exc
 
