@@ -1,0 +1,702 @@
+.skyblog-article-editor {
+  margin-top: 8px;
+  border: 1px solid var(--border, rgba(0, 191, 255, 0.16));
+  border-radius: 16px;
+  background: #080d1b;
+  overflow: hidden;
+}
+
+.skyblog-article-editor__head,
+.skyblog-article-editor__tabs,
+.skyblog-article-editor__foot {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.skyblog-article-editor__head {
+  justify-content: space-between;
+  flex-wrap: wrap;
+  background: #0b182a;
+}
+
+.skyblog-article-editor__title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.skyblog-article-editor__badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 5px 10px;
+  border: 1px solid rgba(0, 191, 255, 0.28);
+  border-radius: 999px;
+  color: #00ffff;
+  background: rgba(0, 191, 255, 0.1);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.skyblog-article-editor__hint,
+.skyblog-article-editor__foot {
+  color: var(--text-muted, rgba(235, 245, 255, 0.68));
+  font-size: 0.86rem;
+  line-height: 1.7;
+}
+
+.skyblog-article-editor__actions,
+.skyblog-article-editor__tabs,
+.skyblog-article-editor__toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.skyblog-article-editor__actions button,
+.skyblog-article-editor__tabs button,
+.skyblog-article-editor__toolbar button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  padding: 7px 11px;
+  border: 1px solid rgba(0, 191, 255, 0.2);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.78);
+  cursor: pointer;
+  box-shadow: none;
+}
+
+.skyblog-article-editor__actions button:hover,
+.skyblog-article-editor__tabs button:hover,
+.skyblog-article-editor__toolbar button:hover {
+  border-color: rgba(0, 255, 255, 0.45);
+  color: #00ffff;
+  transform: none;
+}
+
+.skyblog-article-editor__actions button.is-active,
+.skyblog-article-editor__tabs button.is-active {
+  background: rgba(0, 191, 255, 0.16);
+  border-color: rgba(0, 255, 255, 0.45);
+  color: #00ffff;
+}
+
+.skyblog-article-editor__toolbar {
+  position: relative;
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: #090e1d;
+}
+
+.skyblog-insert-trigger {
+  width: 38px;
+  border-color: rgba(97, 241, 196, 0.3) !important;
+  background: rgba(97, 241, 196, 0.12) !important;
+  color: #61f1c4 !important;
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+
+.skyblog-insert-trigger.is-active {
+  border-color: rgba(97, 241, 196, 0.58) !important;
+  background: rgba(97, 241, 196, 0.22) !important;
+}
+
+.skyblog-toolbar-divider {
+  display: inline-block;
+  width: 1px;
+  height: 28px;
+  margin: 0 4px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.skyblog-insert-panel[hidden] {
+  display: none;
+}
+
+.skyblog-article-editor .skyblog-insert-panel {
+  width: min(420px, calc(100% - 28px));
+  margin: 0 14px 14px;
+  padding: 16px;
+  border: 1px solid rgba(0, 191, 255, 0.14);
+  border-radius: 14px;
+  background: #0d1424;
+  box-shadow: 0 18px 46px rgba(0, 0, 0, 0.36);
+}
+
+.skyblog-insert-search input {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 42px;
+  margin-bottom: 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 191, 255, 0.2) !important;
+  background: rgba(7, 13, 28, 0.94) !important;
+  color: rgba(255, 255, 255, 0.88) !important;
+}
+
+.skyblog-insert-search input::placeholder {
+  color: rgba(235, 245, 255, 0.42);
+}
+
+.skyblog-insert-group + .skyblog-insert-group {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.skyblog-insert-group p {
+  margin: 0 0 10px;
+  color: rgba(235, 245, 255, 0.56);
+  font-size: 0.82rem;
+}
+
+.skyblog-insert-group > div {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.skyblog-article-editor .skyblog-insert-item {
+  display: grid !important;
+  grid-template-columns: 42px minmax(0, 1fr);
+  align-items: center !important;
+  gap: 10px;
+  min-height: 64px !important;
+  padding: 9px !important;
+  border: 1px solid rgba(0, 191, 255, 0.16) !important;
+  border-radius: 12px !important;
+  background: rgba(7, 13, 28, 0.92) !important;
+  color: rgba(255, 255, 255, 0.84) !important;
+  box-shadow: none !important;
+  text-align: left;
+  text-decoration: none !important;
+  transform: none !important;
+}
+
+.skyblog-article-editor .skyblog-insert-item:hover {
+  border-color: rgba(0, 255, 255, 0.42) !important;
+  background: rgba(0, 191, 255, 0.1) !important;
+  color: #fff !important;
+}
+
+.skyblog-article-editor .skyblog-insert-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid rgba(0, 191, 255, 0.18);
+  border-radius: 10px;
+  background: rgba(0, 191, 255, 0.12);
+  color: #00ffff;
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.skyblog-article-editor .skyblog-insert-item strong,
+.skyblog-article-editor .skyblog-insert-item small {
+  display: block;
+}
+
+.skyblog-article-editor .skyblog-insert-item strong {
+  color: rgba(255, 255, 255, 0.92) !important;
+  font-size: 0.9rem;
+}
+
+.skyblog-article-editor .skyblog-insert-item small {
+  margin-top: 4px;
+  color: rgba(235, 245, 255, 0.58) !important;
+  font-size: 0.76rem;
+  line-height: 1.35;
+}
+
+.skyblog-upload-status {
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  border: 1px solid rgba(97, 241, 196, 0.22);
+  border-radius: 12px;
+  background: rgba(97, 241, 196, 0.08);
+  color: rgba(190, 255, 234, 0.92);
+  font-size: 0.84rem;
+}
+
+.skyblog-upload-status.is-error {
+  border-color: rgba(255, 109, 122, 0.24);
+  background: rgba(255, 109, 122, 0.1);
+  color: #ffb5bd;
+}
+
+.skyblog-article-editor__body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  min-height: 520px;
+  overflow: hidden;
+  background: #070b18;
+}
+
+.skyblog-article-editor[data-view="split"] .skyblog-article-editor__body {
+  grid-template-columns: minmax(0, 1.04fr) minmax(0, 0.96fr) 230px;
+}
+
+.skyblog-article-editor[data-view="preview"] .skyblog-article-editor__edit {
+  display: none;
+}
+
+.skyblog-article-editor[data-view="preview"] .skyblog-article-editor__body {
+  grid-template-columns: minmax(0, 1fr) 240px;
+}
+
+.skyblog-article-editor[data-view="edit"] .skyblog-article-editor__preview {
+  display: none;
+}
+
+.skyblog-article-editor[data-view="edit"] .skyblog-article-editor__body {
+  grid-template-columns: minmax(0, 1fr) 240px;
+}
+
+.skyblog-article-editor__edit,
+.skyblog-article-editor__preview,
+.skyblog-article-editor__outline {
+  min-width: 0;
+  max-width: 100%;
+  contain: layout paint;
+}
+
+.skyblog-article-editor__edit {
+  position: relative;
+  overflow: hidden;
+  background: #070b18;
+}
+
+.skyblog-article-editor__preview {
+  position: relative;
+  z-index: 1;
+  box-sizing: border-box;
+  width: 100%;
+  max-height: 620px;
+  padding: 22px 24px;
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.86);
+  background: #101625;
+  overflow: auto;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  text-align: left;
+  isolation: isolate;
+}
+
+.skyblog-article-editor__outline {
+  max-height: 620px;
+  padding: 14px;
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  background: #0b1220;
+  overflow: auto;
+}
+
+.skyblog-outline-card {
+  padding: 14px;
+  border: 1px solid rgba(0, 191, 255, 0.12);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.skyblog-outline-card + .skyblog-outline-card {
+  margin-top: 12px;
+}
+
+.skyblog-outline-kicker {
+  margin: 0 0 10px;
+  color: rgba(235, 245, 255, 0.58);
+  font-size: 0.78rem;
+}
+
+.skyblog-outline-stats {
+  display: grid;
+  gap: 8px;
+}
+
+.skyblog-outline-stats span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 6px 9px;
+  border-radius: 10px;
+  background: rgba(0, 191, 255, 0.08);
+  color: #d8f7ff;
+}
+
+.skyblog-outline-draft {
+  margin: 10px 0 0;
+  color: rgba(97, 241, 196, 0.82);
+  font-size: 0.78rem;
+}
+
+.skyblog-outline-list {
+  display: grid;
+  gap: 4px;
+}
+
+.skyblog-outline-link {
+  display: block;
+  width: 100%;
+  min-height: 32px;
+  padding: 6px 8px;
+  border: none;
+  border-left: 2px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.68);
+  line-height: 1.45;
+  text-align: left;
+  cursor: pointer;
+}
+
+.skyblog-outline-link:hover {
+  border-left-color: rgba(0, 255, 255, 0.55);
+  background: rgba(0, 191, 255, 0.08);
+  color: #00ffff;
+}
+
+.skyblog-outline-link.level-2 {
+  padding-left: 16px;
+}
+
+.skyblog-outline-link.level-3,
+.skyblog-outline-link.level-4 {
+  padding-left: 28px;
+  font-size: 0.84rem;
+}
+
+.skyblog-article-editor__preview * {
+  box-sizing: border-box;
+  max-width: 100%;
+}
+
+.skyblog-article-editor__preview h1,
+.skyblog-article-editor__preview h2,
+.skyblog-article-editor__preview h3 {
+  color: #fff;
+  line-height: 1.4;
+  text-align: left;
+}
+
+.skyblog-article-editor__preview h1 {
+  font-size: 1.45rem;
+}
+
+.skyblog-article-editor__preview h2 {
+  margin-top: 1.5em;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(0, 191, 255, 0.18);
+  font-size: 1.18rem;
+}
+
+.skyblog-article-editor__preview h3 {
+  margin-top: 1.25em;
+  font-size: 1.05rem;
+}
+
+.skyblog-article-editor__preview p,
+.skyblog-article-editor__preview li {
+  line-height: 1.85;
+  text-align: left;
+}
+
+.skyblog-article-editor__preview ul,
+.skyblog-article-editor__preview ol {
+  margin: 14px 0;
+  padding-left: 1.4em;
+}
+
+.skyblog-article-editor__preview table {
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+  border-collapse: collapse;
+}
+
+.skyblog-article-editor__preview th,
+.skyblog-article-editor__preview td {
+  padding: 9px 11px;
+  border: 1px solid rgba(0, 191, 255, 0.14);
+}
+
+.skyblog-article-editor__preview th {
+  color: #00ffff;
+  background: rgba(0, 191, 255, 0.08);
+}
+
+.skyblog-article-editor__preview hr {
+  margin: 24px 0;
+  border: none;
+  border-top: 1px solid rgba(0, 191, 255, 0.18);
+}
+
+.skyblog-article-editor__preview .task-list-item {
+  list-style: none;
+}
+
+.skyblog-article-editor__preview .task-list-item input {
+  width: auto;
+  margin-right: 8px;
+  accent-color: #00bfff;
+}
+
+.skyblog-article-editor__preview code {
+  padding: 2px 6px;
+  border-radius: 8px;
+  background: rgba(0, 191, 255, 0.12);
+  color: #9beaff;
+}
+
+.skyblog-article-editor__preview pre {
+  overflow: auto;
+  padding: 16px;
+  border: 1px solid rgba(0, 191, 255, 0.14);
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.32);
+}
+
+.skyblog-article-editor__preview pre code {
+  padding: 0;
+  background: transparent;
+  color: inherit;
+}
+
+.skyblog-article-editor__preview blockquote {
+  margin: 18px 0;
+  padding: 12px 16px;
+  border-left: 4px solid rgba(0, 191, 255, 0.5);
+  border-radius: 0 12px 12px 0;
+  background: rgba(0, 191, 255, 0.08);
+}
+
+.skyblog-article-editor textarea.vLargeTextField,
+.skyblog-article-editor textarea {
+  display: block;
+  box-sizing: border-box;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  min-height: 520px;
+  height: 100%;
+  margin: 0;
+  border: none;
+  border-radius: 0;
+  resize: vertical;
+  background: rgba(6, 10, 22, 0.72);
+  overflow: auto;
+  font-family: "Consolas", "JetBrains Mono", "Noto Sans Mono", monospace;
+  font-size: 0.95rem;
+  line-height: 1.8;
+}
+
+.skyblog-article-editor textarea:focus {
+  box-shadow: inset 0 0 0 2px rgba(0, 191, 255, 0.22);
+}
+
+.skyblog-article-editor[data-mode="xmind"] textarea {
+  font-family: "Noto Sans SC", "Microsoft YaHei", sans-serif;
+}
+
+.skyblog-xmind-map {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 34px;
+  min-width: max-content;
+  padding: 24px;
+  margin-bottom: 28px;
+  border: 1px solid rgba(0, 191, 255, 0.12);
+  border-radius: 16px;
+  background: rgba(0, 191, 255, 0.025);
+  overflow: auto;
+}
+
+.skyblog-xmind-links {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.skyblog-xmind-links path {
+  fill: none;
+  stroke: rgba(0, 191, 255, 0.42);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.skyblog-xmind-root,
+.skyblog-xmind-node {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  max-width: 260px;
+  min-height: 38px;
+  padding: 9px 14px;
+  border: 1px solid rgba(0, 255, 255, 0.28);
+  border-radius: 12px;
+  background: rgba(0, 191, 255, 0.12);
+  line-height: 1.5;
+  white-space: normal;
+}
+
+.skyblog-xmind-root {
+  margin-top: 12px;
+  border-color: rgba(97, 241, 196, 0.45);
+  background: rgba(97, 241, 196, 0.14);
+  color: #c7ffe9;
+  font-size: 1.06rem;
+  font-weight: 800;
+}
+
+.skyblog-xmind-tree,
+.skyblog-xmind-tree ul {
+  position: relative;
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.skyblog-xmind-tree ul {
+  margin-left: 42px;
+  padding-left: 24px;
+}
+
+.skyblog-xmind-branch {
+  position: relative;
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  align-items: start;
+  gap: 0;
+}
+
+.skyblog-xmind-branch[data-depth="1"] > .skyblog-xmind-node {
+  border-color: rgba(0, 191, 255, 0.32);
+  background: rgba(0, 191, 255, 0.14);
+  color: #d8f7ff;
+  font-weight: 700;
+}
+
+.skyblog-xmind-branch[data-depth="2"] > .skyblog-xmind-node {
+  border-color: rgba(201, 167, 255, 0.28);
+  background: rgba(201, 167, 255, 0.1);
+}
+
+.skyblog-xmind-branch[data-depth="3"] > .skyblog-xmind-node,
+.skyblog-xmind-branch[data-depth="4"] > .skyblog-xmind-node {
+  border-color: rgba(255, 200, 107, 0.22);
+  background: rgba(255, 200, 107, 0.08);
+}
+
+.skyblog-xmind-article {
+  padding-top: 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.skyblog-editor-empty {
+  color: var(--text-muted, rgba(235, 245, 255, 0.68));
+}
+
+.skyblog-doc-title-row input#id_title {
+  box-sizing: border-box;
+  width: min(100%, 1080px);
+  min-height: 58px;
+  padding: 14px 18px;
+  border-color: rgba(0, 191, 255, 0.24);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.045);
+  font-size: 1.55rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.skyblog-doc-excerpt-row textarea {
+  width: min(100%, 1080px);
+  min-height: 92px;
+}
+
+body.skyblog-editor-focus-mode {
+  overflow: hidden;
+}
+
+.skyblog-article-editor.is-focus {
+  position: fixed;
+  z-index: 10000;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  border-radius: 0;
+  border: none;
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.55);
+}
+
+.skyblog-article-editor:fullscreen {
+  width: 100vw;
+  height: 100vh;
+  border: none;
+  border-radius: 0;
+}
+
+.skyblog-article-editor:fullscreen::backdrop {
+  background: #070b18;
+}
+
+.skyblog-article-editor.is-focus .skyblog-article-editor__body {
+  min-height: calc(100vh - 198px);
+}
+
+.skyblog-article-editor.is-focus textarea,
+.skyblog-article-editor.is-focus .skyblog-article-editor__preview,
+.skyblog-article-editor.is-focus .skyblog-article-editor__outline {
+  max-height: calc(100vh - 198px);
+  min-height: calc(100vh - 198px);
+}
+
+@media (max-width: 1280px) {
+  .skyblog-article-editor[data-view="split"] .skyblog-article-editor__body,
+  .skyblog-article-editor[data-view="edit"] .skyblog-article-editor__body,
+  .skyblog-article-editor[data-view="preview"] .skyblog-article-editor__body {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .skyblog-article-editor__outline {
+    grid-column: 1 / -1;
+    max-height: 260px;
+    border-left: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+}
+
+@media (max-width: 1100px) {
+  .skyblog-article-editor[data-view="split"] .skyblog-article-editor__body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .skyblog-article-editor[data-view="split"] .skyblog-article-editor__preview {
+    border-left: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .skyblog-article-editor[data-view="edit"] .skyblog-article-editor__body,
+  .skyblog-article-editor[data-view="preview"] .skyblog-article-editor__body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

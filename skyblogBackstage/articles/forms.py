@@ -24,16 +24,27 @@ class ArticleAdminForm(forms.ModelForm):
         required=False,
         label="内容源文件",
         help_text="支持导入 .md、.markdown、.xmind、.docx、.doc 文件。选择文件后保存，系统会自动识别 Markdown 正文与图片。",
+        widget=forms.FileInput(attrs={"accept": ".md,.markdown,.xmind,.docx,.doc"}),
     )
     cover_upload = forms.ImageField(
         required=False,
         label="封面图片上传",
         help_text="支持上传 JPG、PNG、WEBP、GIF。上传后会自动写入下方封面图字段。",
+        widget=forms.FileInput(attrs={"accept": ".jpg,.jpeg,.png,.webp,.gif,image/*"}),
     )
 
     class Meta:
         model = Article
         fields = "__all__"
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["content"].widget.attrs.update(
+            {
+                "placeholder": "在这里编写 Markdown 正文，或上传 Markdown / XMind / Word 文件后保存自动提取内容。",
+                "rows": 26,
+            }
+        )
 
     def clean_source_file(self):
         uploaded = self.cleaned_data.get("source_file")

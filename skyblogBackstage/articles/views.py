@@ -1,11 +1,25 @@
 from django.db import models
+from pathlib import Path
+import uuid
+
+from django.core.files.storage import default_storage
+from django.utils.text import slugify
 from rest_framework import views, viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import AllowAny, IsAuthenticatedOrReadOnly
+from rest_framework.parsers import FormParser, MultiPartParser
+from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 
 from .models import AboutProfile, Article, Category, Tag
 from .serializers import AboutProfileSerializer, ArticleSerializer, CategorySerializer, TagSerializer
+
+
+IMAGE_SUFFIXES = {'.jpg', '.jpeg', '.png', '.webp', '.gif', '.svg'}
+ATTACHMENT_SUFFIXES = {
+    '.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx',
+    '.zip', '.rar', '.7z', '.txt', '.md', '.csv', '.json', '.xmind',
+}
+MAX_ASSET_SIZE = 20 * 1024 * 1024
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
@@ -94,6 +108,46 @@ class ArticleViewSet(viewsets.ModelViewSet):
         Article.objects.filter(pk=article.pk).update(views=models.F('views') + 1)
         article.refresh_from_db(fields=['views'])
         return Response({'views': article.views})
+
+
+class ArticleAssetUploadView(views.APIView):
+    """Upload editor images and attachments for authenticated admin users."""
+
+    permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def post(self, request):
+        uploaded = request.FILES.get('file')
+        asset_type = request.data.get('type', 'attachment')
+
+        if uploaded is None:
+            return Response({'message': '请选择要上传的文件。'}, status=400)
+
+        if uploaded.size > MAX_ASSET_SIZE:
+            return Response({'message': '文件不能超过 20MB。'}, status=400)
+
+        suffix = Path(uploaded.name).suffix.lower()
+        if asset_type == 'image':
+            allowed_suffixes = IMAGE_SUFFIXES
+            storage_dir = 'article-assets/images'
+        else:
+            allowed_suffixes = ATTACHMENT_SUFFIXES | IMAGE_SUFFIXES
+            storage_dir = 'article-assets/files'
+
+        if suffix not in allowed_suffixes:
+            return Response({'message': f'暂不支持该文件类型：{suffix or "无扩展名"}。'}, status=400)
+
+        stem = slugify(Path(uploaded.name).stem) or 'asset'
+        storage_name = f'{storage_dir}/{stem}-{uuid.uuid4().hex[:10]}{suffix}'
+        saved_path = default_storage.save(storage_name, uploaded)
+        file_url = default_storage.url(saved_path)
+
+        return Response({
+            'name': uploaded.name,
+            'url': file_url,
+            'type': 'image' if asset_type == 'image' else 'attachment',
+            'size': uploaded.size,
+        })
 
 
 class AboutProfileView(views.APIView):

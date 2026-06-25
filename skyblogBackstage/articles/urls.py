@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import AboutProfileView, CategoryViewSet, TagViewSet, ArticleViewSet
+from .views import AboutProfileView, ArticleAssetUploadView, CategoryViewSet, TagViewSet, ArticleViewSet
 
 router = DefaultRouter()
 router.register(r'categories', CategoryViewSet, basename='category')
@@ -9,5 +9,6 @@ router.register(r'', ArticleViewSet, basename='article')
 
 urlpatterns = [
     path('about-profile/', AboutProfileView.as_view(), name='about-profile'),
+    path('assets/upload/', ArticleAssetUploadView.as_view(), name='article-asset-upload'),
     path('', include(router.urls)),
 ]

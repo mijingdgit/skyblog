@@ -22,6 +22,12 @@ class TagAdmin(admin.ModelAdmin):
 class ArticleAdmin(admin.ModelAdmin):
     form = ArticleAdminForm
     readonly_fields = ["xmind_file"]
+    class Media:
+        css = {
+            "all": ("admin/css/article-editor.css",)
+        }
+        js = ("admin/js/article-editor.js",)
+
     list_display = [
         "title",
         "category",
@@ -42,7 +48,7 @@ class ArticleAdmin(admin.ModelAdmin):
             "内容导入",
             {
                 "fields": ("source_file", "xmind_file"),
-                "description": "上传 Markdown、XMind 或 Word 文件后，保存时会自动提取正文；Markdown 中可访问的本地图片也会一并复制到站点媒体目录。",
+                "description": "上传 Markdown、XMind 或 Word 文件后，页面会自动切换到对应编辑模式；保存时会提取正文，Markdown 中可访问的本地图片也会一并复制到站点媒体目录。",
             },
         ),
         (
